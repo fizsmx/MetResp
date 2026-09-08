@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetResp — Métodos Numéricos | por Fisbert</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mathjs@11.8.0/lib/browser/math.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ============================================
+           CSS VARIABLES & THEMING
+           ============================================ */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            --card-bg: rgba(25, 25, 50, 0.55);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-hover: rgba(255, 255, 255, 0.12);
+            --text-main: #f0f0f5;
+            --text-muted: #a0a0b8;
+            --accent: #8a2be2;
+            --accent-glow: rgba(138, 43, 226, 0.35);
+            --accent2: #00d2ff;
+            --success: #00e676;
+            --error: #ff5252;
+            --warning: #ffb300;
+            --input-bg: rgba(0, 0, 0, 0.25);
+            --input-border: rgba(255, 255, 255, 0.15);
+            --input-focus: rgba(138, 43, 226, 0.5);
+            --box-bg: rgba(138, 43, 226, 0.15);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        [data-theme="light"] {
+            --bg-gradient: linear-gradient(135deg, #e8dff5 0%, #c3e0f7 50%, #e0c3fc 100%);
+            --card-bg: rgba(255, 255, 255, 0.65);
+            --card-border: rgba(0, 0, 0, 0.08);
+            --card-hover: rgba(0, 0, 0, 0.05);
+            --text-main: #1a1a2e;
+            --text-muted: #555577;
+            --accent: #6d28d9;
+            --accent-glow: rgba(109, 40, 217, 0.2);
+            --accent2: #0077ff;
+            --success: #00a650;
+            --error: #d32f2f;
+            --warning: #e68a00;
+            --input-bg: rgba(255, 255, 255, 0.7);
+            --input-border: rgba(0, 0, 0, 0.15);
+            --input-focus: rgba(109, 40, 217, 0.3);
+            --box-bg: rgba(109, 40, 217, 0.08);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ============================================
+           RESET & BASE
+           ============================================ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background 0.4s, color 0.3s;
+            line-height: 1.65;
+        }
+        h1, h2, h3, h4, h5, h6, .nav-tab, .btn, label, .hero-title, .footer-text {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        a { color: var(--accent2); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ============================================
+           LAYOUT
+           ============================================ */
+        .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        .hero {
+            text-align: center;
+            padding: 2.5rem 1rem 1.5rem;
+        }
+        .hero-title {
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, #8a2be2, #00d2ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 0.3rem;
+        }
+        .hero-controls {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .theme-btn {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.5rem 1.2rem;
+            border-radius: 99px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.25s;
+        }
+        .theme-btn:hover { background: var(--card-hover); transform: translateY(-1px); }
+
+        /* ============================================
+           GLASS CARD
+           ============================================ */
+        .glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        /* ============================================
+           SMART INPUT SECTION
+           ============================================ */
+        .smart-section {
+            padding: 1.8rem;
+            margin-bottom: 2rem;
+        }
+        .smart-section h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+        .smart-section p.hint {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        .smart-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 2px dashed var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        .smart-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            border-style: solid;
+            box-shadow: 0 0 0 3px var(--input-focus);
+        }
+        .smart-textarea::placeholder { color: var(--text-muted); opacity: 0.6; }
+        .smart-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .detected-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.8rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--accent-glow);
+            border: 1px solid var(--accent);
+            color: var(--text-main);
+            animation: fadeIn 0.4s ease;
+        }
+        .detected-values {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            background: var(--box-bg);
+            border: 1px solid var(--card-border);
+            font-size: 0.9rem;
+            animation: fadeIn 0.4s ease;
+        }
+        .detected-values b { color: var(--accent2); }
+
+        /* ============================================
+           NAVIGATION TABS
+           ============================================ */
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: thin;
+        }
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            cursor: pointer;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.25s;
+            white-space: nowrap;
+            position: relative;
+        }
+        .nav-tab:hover { color: var(--text-main); background: var(--card-hover); }
+        .nav-tab.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            box-shadow: 0 4px 18px var(--accent-glow);
+        }
+
+        /* ============================================
+           TAB CONTENT
+           ============================================ */
+        .tab-content { display: none; animation: fadeIn 0.5s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================
+           FORMS
+           ============================================ */
+        .form-card { padding: 1.8rem; margin-bottom: 1.5rem; }
+        .theory-box {
+            padding: 1rem 1.2rem;
+            margin-bottom: 1.5rem;
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            border-left: 4px solid var(--accent);
+            font-size: 0.9rem;
+        }
+        .theory-box h3 { margin-bottom: 0.4rem; font-size: 1.1rem; }
+        .theory-box p { margin: 0.2rem 0; color: var(--text-muted); }
+        .input-group { margin-bottom: 1.2rem; }
+        label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border-radius: 10px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--input-focus);
+        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+        /* ============================================
+           BUTTONS
+           ============================================ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.7rem 1.3rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            font-family: 'Space Grotesk', sans-serif;
+            transition: all 0.2s;
+            margin-right: 0.4rem;
+            margin-bottom: 0.4rem;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-secondary {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+        }
+        .btn-secondary:hover { background: var(--card-hover); }
+        .btn-example {
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            color: var(--accent2);
+        }
+        .btn-example:hover { background: rgba(0, 210, 255, 0.2); }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+
+        /* ============================================
+           STEP-BY-STEP OUTPUT
+           ============================================ */
+        .output-area { margin-top: 1.5rem; }
+        .step-card {
+            padding: 1.3rem 1.5rem;
+            margin-bottom: 1.2rem;
+            border-left: 4px solid var(--accent2);
+            animation: fadeIn 0.4s ease;
+        }
+        .step-header {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 0.8rem;
+            color: var(--accent2);
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.5rem;
+        }
+        .math-block {
+            margin-bottom: 0.8rem;
+            line-height: 1.8;
+        }
+        .math-block b { color: var(--accent2); }
+        .result-box {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            background: var(--box-bg);
+            border: 1.5px solid var(--accent);
+            border-radius: 6px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.7rem;
+            border-radius: 99px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .badge-success { background: var(--success); color: #000; }
+        .badge-error { background: var(--error); color: #fff; }
+        .badge-warning { background: var(--warning); color: #000; }
+        .step-card.final { border-left-color: var(--success); }
+
+        /* ============================================
+           TABLES
+           ============================================ */
+        table { width: 100%; border-collapse: collapse; margin-top: 0.8rem; }
+        th, td { padding: 0.6rem 0.8rem; text-align: center; border: 1px solid var(--card-border); font-size: 0.85rem; }
+        th { background: rgba(0, 0, 0, 0.15); font-family: 'Space Grotesk', sans-serif; font-weight: 600; }
+
+        /* ============================================
+           MATRIX INPUT
+           ============================================ */
+        .matrix-grid { display: inline-grid; gap: 0.4rem; padding: 1rem; background: rgba(0,0,0,0.08); border-radius: 10px; }
+        .matrix-input { width: 65px; text-align: center; padding: 0.5rem; }
+        .matrix-sep { display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; color: var(--accent); }
+
+        /* ============================================
+           CHART
+           ============================================ */
+        .chart-container { position: relative; height: 350px; width: 100%; margin-top: 1.5rem; margin-bottom: 1.5rem; }
+
+        /* ============================================
+           FOOTER
+           ============================================ */
+        .footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid var(--card-border);
+        }
+        .footer-text { color: var(--text-muted); font-size: 0.85rem; }
+        .footer-text .author { color: var(--accent); font-weight: 700; }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .grid-3 { grid-template-columns: 1fr; }
+            .container { padding: 1rem; }
+            .form-card { padding: 1.2rem; }
+            .nav-tab { padding: 0.6rem 1rem; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- ========== HERO ========== -->
+    <div class="hero">
+        <h1 class="hero-title">📐 MetResp</h1>
+        <p class="hero-subtitle">Calculadora de Métodos Numéricos — Procedimiento paso a paso</p>
+        <div class="hero-controls">
+            <button class="theme-btn" onclick="toggleTheme()">🌓 Cambiar Tema</button>
+        </div>
+    </div>
+
+    <!-- ========== SMART INPUT ========== -->
+    <div class="glass smart-section">
+        <h2>🧠 Entrada Inteligente</h2>
+        <p class="hint">
+            Pega o escribe el <strong>enunciado completo</strong> del ejercicio tal como te lo dieron.
+            El sistema detectará automáticamente el método, la función, los valores iniciales y la tolerancia.
+            <br>Ejemplos: <em>"Aplicar el método de Newton-Raphson para f(x) = e^x - 2 + x² con x₀ = 0 y error 0.01"</em>
+        </p>
+        <textarea class="smart-textarea" id="smartInput" placeholder="Pega aquí el enunciado completo del ejercicio...
+
+Ejemplos que puedes pegar:
+• Aplicar bisección para f(x) = e^(3x) - 4 en el intervalo (0,1) con error de 0.01
+• Usar Newton-Raphson en f(x) = e^x - 2 + x² con x₀ = 0 y tolerancia 0.01
+• Método punto fijo para f(x) = 2sen(x) - x, g(x) = 2sen(x), x₀ = 1.5, e = 0.01
+• Resolver por Gauss-Jordan: 2x+y-z=8, -3x-y+2z=-11, -2x+y+2z=-3"></textarea>
+        <div class="smart-actions">
+            <button class="btn btn-primary" onclick="analyzeInput()">🔍 Analizar y Resolver</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('smartInput').value=''; hideDetected()">🗑️ Limpiar</button>
+            <span id="detectedBadge"></span>
+        </div>
+        <div id="detectedValues" class="detected-values" style="display:none;"></div>
+    </div>
+
+    <!-- ========== TABS ========== -->
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="openTab('nr', this)">📈 Newton-Raphson</button>
+        <button class="nav-tab" onclick="openTab('bisec', this)">📏 Bisección</button>
+        <button class="nav-tab" onclick="openTab('pfijo', this)">🎯 Punto Fijo</button>
+        <button class="nav-tab" onclick="openTab('gj', this)">📊 Gauss-Jordan</button>
+    </div>
+
+    <!-- ============================================================
+         NEWTON-RAPHSON
+         ============================================================ -->
+    <div id="nr" class="tab-content active">
+        <div class="glass form-card">
+            <div class="theory-box">
+                <h3>Método de Newton-Raphson</h3>
+                <p>Fórmula: x<sub>i+1</sub> = x<sub>i</sub> − f(x<sub>i</sub>) / f'(x<sub>i</sub>)</p>
+                <p>Error: ea = |x<sub>i+1</sub> − x<sub>i</sub>| / |x<sub>i+1</sub>| × 100%</p>
+            </div>
+            <div class="grid-2">
+                <div>
+                    <div class="input-group">
+                        <label>📌 Función f(x):</label>
+                        <input type="text" id="nr_fx" placeholder="exp(x) - 2 + x^2">
+                    </div>
+                    <div class="input-group">
+                        <label>📌 Derivada f'(x) <small style="color:var(--text-muted)">(déjala vacía para autocalcular)</small>:</label>
+                        <input type="text" id="nr_dfx" placeholder="Se calcula automáticamente">
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>🔢 Valor inicial (x₀):</label>
+                        <input type="number" id="nr_x0" step="any" placeholder="0">
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>🎯 Tolerancia (%):</label>
+                            <input type="number" id="nr_tol" step="any" value="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>🔁 Máx. iteraciones:</label>
+                            <input type="number" id="nr_maxi" value="50">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="solveNR()">▶️ Resolver</button>
+                <button class="btn btn-example" onclick="loadExampleNR()">📝 Ejemplo: Práctica #6</button>
+                <button class="btn btn-secondary" onclick="exportText('nr_output')">📥 Exportar</button>
+            </div>
+        </div>
+        <div id="nr_output" class="output-area"></div>
+        <div id="nr_chart_container" class="chart-container" style="display:none;">
+            <canvas id="nr_chart"></canvas>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         BISECCIÓN
+         ============================================================ -->
+    <div id="bisec" class="tab-content">
+        <div class="glass form-card">
+            <div class="theory-box">
+                <h3>Método de Bisección</h3>
+                <p>Punto medio: m = (a + b) / 2</p>
+                <p>Si f(a)·f(m) &lt; 0 → raíz en [a, m]. Si f(a)·f(m) &gt; 0 → raíz en [m, b].</p>
+                <p>Error: e = (b − a) / 2</p>
+            </div>
+            <div class="grid-2">
+                <div>
+                    <div class="input-group">
+                        <label>📌 Función f(x):</label>
+                        <input type="text" id="bi_fx" placeholder="exp(3*x) - 4">
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>📍 Límite inferior (a):</label>
+                            <input type="number" id="bi_a" step="any" placeholder="0">
+                        </div>
+                        <div class="input-group">
+                            <label>📍 Límite superior (b):</label>
+                            <input type="number" id="bi_b" step="any" placeholder="1">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>🎯 Tolerancia (%):</label>
+                            <input type="number" id="bi_tol" step="any" value="1">
+                        </div>
+                        <div class="input-group">
+                            <label>🔁 Máx. iteraciones:</label>
+                            <input type="number" id="bi_maxi" value="50">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="solveBiseccion()">▶️ Resolver</button>
+                <button class="btn btn-example" onclick="loadExampleBisec()">📝 Ejemplo: Práctica #2</button>
+                <button class="btn btn-secondary" onclick="exportText('bi_output')">📥 Exportar</button>
+            </div>
+        </div>
+        <div id="bi_output" class="output-area"></div>
+        <div id="bi_chart_container" class="chart-container" style="display:none;">
+            <canvas id="bi_chart"></canvas>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         PUNTO FIJO
+         ============================================================ -->
+    <div id="pfijo" class="tab-content">
+        <div class="glass form-card">
+            <div class="theory-box">
+                <h3>Método de Punto Fijo</h3>
+                <p>Fórmula: x<sub>i+1</sub> = g(x<sub>i</sub>)</p>
+                <p>Error: ea = |x<sub>i+1</sub> − x<sub>i</sub>| / |x<sub>i+1</sub>| × 100%</p>
+            </div>
+            <div class="grid-2">
+                <div>
+                    <div class="input-group">
+                        <label>📌 Función f(x):</label>
+                        <input type="text" id="pf_fx" placeholder="2*sin(x) - x">
+                    </div>
+                    <div class="input-group">
+                        <label>📌 Función g(x) (despejada):</label>
+                        <input type="text" id="pf_gx" placeholder="2*sin(x)">
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>🔢 Valor inicial (x₀):</label>
+                        <input type="number" id="pf_x0" step="any" placeholder="1.5">
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>🎯 Tolerancia (%):</label>
+                            <input type="number" id="pf_tol" step="any" value="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>🔁 Máx. iteraciones:</label>
+                            <input type="number" id="pf_maxi" value="50">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="solvePF()">▶️ Resolver</button>
+                <button class="btn btn-example" onclick="loadExamplePF()">📝 Ejemplo: Práctica #5</button>
+                <button class="btn btn-secondary" onclick="exportText('pf_output')">📥 Exportar</button>
+            </div>
+        </div>
+        <div id="pf_output" class="output-area"></div>
+        <div id="pf_chart_container" class="chart-container" style="display:none;">
+            <canvas id="pf_chart"></canvas>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         GAUSS-JORDAN
+         ============================================================ -->
+    <div id="gj" class="tab-content">
+        <div class="glass form-card">
+            <div class="theory-box">
+                <h3>Método de Gauss-Jordan</h3>
+                <p>Reduce la matriz aumentada a forma escalonada reducida (identidad).</p>
+                <p>Operaciones: intercambio de filas, escalamiento, eliminación.</p>
+            </div>
+            <div class="input-group" style="max-width:220px;">
+                <label>📐 Tamaño del sistema:</label>
+                <select id="gj_size" onchange="generateMatrixInput()">
+                    <option value="2">2 × 2</option>
+                    <option value="3" selected>3 × 3</option>
+                    <option value="4">4 × 4</option>
+                    <option value="5">5 × 5</option>
+                    <option value="6">6 × 6</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>📋 O ingresa las ecuaciones en texto:</label>
+                <input type="text" id="gj_equations" placeholder="ej: 2x+y-z=8, -3x-y+2z=-11, -2x+y+2z=-3">
+                <button class="btn btn-secondary" style="margin-top:0.5rem;" onclick="parseEquations()">Interpretar ecuaciones</button>
+            </div>
+            <div id="matrix_container" style="overflow-x:auto;"></div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="solveGJ()">▶️ Resolver</button>
+                <button class="btn btn-example" onclick="loadExampleGJ()">📝 Ejemplo</button>
+                <button class="btn btn-secondary" onclick="exportText('gj_output')">📥 Exportar</button>
+            </div>
+        </div>
+        <div id="gj_output" class="output-area"></div>
+    </div>
+
+    <!-- ========== FOOTER ========== -->
+    <div class="footer">
+        <p class="footer-text">
+            Desarrollado con ❤️ por <span class="author">Fisbert</span> — MetResp © 2026
+        </p>
+    </div>
+
+</div>
+
+<script>
+/* ================================================================
+   UTILIDADES GLOBALES
+   ================================================================ */
+
+// Tema
+function toggleTheme() {
+    const html = document.documentElement;
+    html.setAttribute('data-theme',
+        html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+
+// Pestañas
+function openTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    if (btn) btn.classList.add('active');
+}
+
+// Formateo de números
+function fmt(num, dec = 6) {
+    if (typeof num !== 'number' || !isFinite(num)) return num;
+    if (Math.abs(num) < 1e-12 && num !== 0) return num.toExponential(4);
+    return parseFloat(num.toFixed(dec));
+}
+
+// Exportar a texto
+function exportText(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container || !container.innerText.trim()) {
+        alert('No hay resultados para exportar. Resuelve primero.'); return;
+    }
+    const blob = new Blob([container.innerText], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'MetResp_procedimiento.txt';
+    a.click();
+}
+
+// Charts
+let chartInstances = {};
+function plotChart(chartId, containerId, labels, data, title) {
+    document.getElementById(containerId).style.display = 'block';
+    const ctx = document.getElementById(chartId).getContext('2d');
+    if (chartInstances[chartId]) chartInstances[chartId].destroy();
+
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textC = isDark ? '#f0f0f5' : '#1a1a2e';
+    const gridC = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+
+    chartInstances[chartId] = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Error (%)',
+                data,
+                borderColor: '#8a2be2',
+                backgroundColor: 'rgba(138,43,226,0.15)',
+                borderWidth: 2.5,
+                pointRadius: 5,
+                pointBackgroundColor: '#00d2ff',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: { display: true, text: title, color: textC, font: { family: "'Space Grotesk'", size: 14, weight: 600 } },
+                legend: { labels: { color: textC } }
+            },
+            scales: {
+                x: { grid: { color: gridC }, ticks: { color: textC } },
+                y: { grid: { color: gridC }, ticks: { color: textC }, title: { display: true, text: 'Error (%)', color: textC } }
+            }
+        }
+    });
+}
+
+/* ================================================================
+   NORMALIZADOR DE EXPRESIONES MATEMÁTICAS
+   Convierte notación "humana" a notación math.js
+   ================================================================ */
+function normExpr(s) {
+    if (!s) return s;
+    s = s.trim();
+    // Reemplazos de notación común
+    s = s.replace(/sen\b/gi, 'sin');       // sen → sin
+    s = s.replace(/ln\b/gi, 'log');        // ln → log (natural)
+    s = s.replace(/\bLog\b/g, 'log10');    // Log → log10 (si es mayúscula)
+    s = s.replace(/√/g, 'sqrt');           // √ → sqrt
+    s = s.replace(/π/g, 'pi');             // π → pi
+    s = s.replace(/\be\b(?!\^|x)/g, 'e'); // literal e
+    // Manejar e^(...) → exp(...)
+    s = s.replace(/e\s*\^\s*\(([^)]+)\)/g, 'exp($1)');
+    s = s.replace(/e\s*\^\s*([a-z0-9.*x+-]+)/gi, 'exp($1)');
+    // Multiplicación implícita: 2x → 2*x, 3sin → 3*sin, )(  → )*(
+    s = s.replace(/(\d)([a-zA-Z(])/g, '$1*$2');
+    s = s.replace(/\)(\w)/g, ')*$1');
+    s = s.replace(/\)\(/g, ')*(');
+    // x² x³ → x^2 x^3
+    s = s.replace(/²/g, '^2');
+    s = s.replace(/³/g, '^3');
+    return s;
+}
+
+/* ================================================================
+   🧠 ANALIZADOR INTELIGENTE DE ENUNCIADOS
+   ================================================================ */
+function analyzeInput() {
+    const text = document.getElementById('smartInput').value.trim();
+    if (!text) { alert('Escribe o pega un enunciado para analizar.'); return; }
+
+    const lower = text.toLowerCase();
+
+    // Detectar método
+    let method = null;
+    if (/newton[\s-]*raphson/i.test(text)) method = 'nr';
+    else if (/bisecci[oó]n/i.test(text)) method = 'bisec';
+    else if (/punto\s*fijo/i.test(text)) method = 'pfijo';
+    else if (/gauss[\s-]*jordan/i.test(text)) method = 'gj';
+    else if (/gauss/i.test(text)) method = 'gj';
+
+    // Si no se detectó, intentar por contexto
+    if (!method) {
+        if (/intervalo/i.test(text) && /\(\s*[\d.-]+\s*,\s*[\d.-]+\s*\)/i.test(text)) method = 'bisec';
+        else if (/g\s*\(\s*x\s*\)/i.test(text) && /punto|fijo|iteraci/i.test(text)) method = 'pfijo';
+        else if (/x\s*[₀0]\s*=/i.test(text) || /valor\s*inicial/i.test(text)) method = 'nr';
+        else if (/sistema|ecuaciones\s*lineales|matriz/i.test(text)) method = 'gj';
+    }
+
+    if (!method) {
+        document.getElementById('detectedBadge').innerHTML =
+            '<span class="detected-badge" style="border-color:var(--error)">❌ No se detectó el método. Sé más específico.</span>';
+        return;
+    }
+
+    const methodNames = { nr: 'Newton-Raphson', bisec: 'Bisección', pfijo: 'Punto Fijo', gj: 'Gauss-Jordan' };
+
+    // Extraer f(x)
+    let fx = null;
+    const fxMatch = text.match(/f\s*\(\s*x\s*\)\s*[:=]\s*([^\n,;]+?)(?:\s*[,;]|\s+(?:con|y |en |donde|sabiendo|obtener|aplicar|usar|intervalo|x[₀0]|g\s*\(|error|tolerancia|e\s*=)|\s*$)/i);
+    if (fxMatch) fx = fxMatch[1].trim();
+
+    // Extraer g(x)
+    let gx = null;
+    const gxMatch = text.match(/g\s*\(\s*x\s*\)\s*[:=]\s*([^\n,;]+?)(?:\s*[,;]|\s+(?:con|y |x[₀0]|error|tolerancia|e\s*=)|\s*$)/i);
+    if (gxMatch) gx = gxMatch[1].trim();
+
+    // Extraer x₀
+    let x0 = null;
+    const x0Match = text.match(/[xX]\s*[₀0]\s*[:=]\s*([\d.+-]+)/i) ||
+                    text.match(/valor\s*inicial\s*(?:de)?\s*[:=]?\s*([\d.+-]+)/i) ||
+                    text.match(/x\s*[₀0]\s*[:=]\s*([\d.+-]+)/);
+    if (x0Match) x0 = parseFloat(x0Match[1]);
+
+    // Extraer intervalo (a, b)
+    let a = null, b = null;
+    const intMatch = text.match(/(?:intervalo|en)\s*(?:de)?\s*[\[(]\s*([\d.+-]+)\s*[,;]\s*([\d.+-]+)\s*[\])]/i) ||
+                     text.match(/\(\s*([\d.+-]+)\s*,\s*([\d.+-]+)\s*\)/);
+    if (intMatch) { a = parseFloat(intMatch[1]); b = parseFloat(intMatch[2]); }
+
+    // Extraer tolerancia / error
+    let tol = null;
+    const tolMatch = text.match(/(?:error|tolerancia|e)\s*[:=]\s*([\d.]+)\s*%?/i) ||
+                     text.match(/(?:error\s*de|tolerancia\s*de)\s*([\d.]+)\s*%?/i);
+    if (tolMatch) tol = parseFloat(tolMatch[1]);
+
+    // Extraer derivada f'(x)
+    let dfx = null;
+    const dfxMatch = text.match(/f\s*['′]\s*\(\s*x\s*\)\s*[:=]\s*([^\n,;]+?)(?:\s*[,;]|\s+(?:con|y |x[₀0]|error)|\s*$)/i);
+    if (dfxMatch) dfx = dfxMatch[1].trim();
+
+    // Mostrar badge
+    document.getElementById('detectedBadge').innerHTML =
+        `<span class="detected-badge">✅ Método detectado: ${methodNames[method]}</span>`;
+
+    // Mostrar valores detectados
+    let valuesHtml = '<b>Valores extraídos:</b><br>';
+    if (fx) valuesHtml += `f(x) = <b>${fx}</b><br>`;
+    if (dfx) valuesHtml += `f'(x) = <b>${dfx}</b><br>`;
+    if (gx) valuesHtml += `g(x) = <b>${gx}</b><br>`;
+    if (x0 !== null) valuesHtml += `x₀ = <b>${x0}</b><br>`;
+    if (a !== null) valuesHtml += `Intervalo = <b>[${a}, ${b}]</b><br>`;
+    if (tol !== null) valuesHtml += `Tolerancia = <b>${tol}</b><br>`;
+
+    const dv = document.getElementById('detectedValues');
+    dv.innerHTML = valuesHtml;
+    dv.style.display = 'block';
+
+    // Activar la pestaña correcta
+    document.querySelectorAll('.nav-tab').forEach((btn, i) => {
+        const ids = ['nr', 'bisec', 'pfijo', 'gj'];
+        btn.classList.remove('active');
+        if (ids[i] === method) btn.classList.add('active');
+    });
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.getElementById(method).classList.add('active');
+
+    // Rellenar campos y resolver
+    if (method === 'nr') {
+        if (fx) document.getElementById('nr_fx').value = normExpr(fx);
+        if (dfx) document.getElementById('nr_dfx').value = normExpr(dfx);
+        if (x0 !== null) document.getElementById('nr_x0').value = x0;
+        if (tol !== null) document.getElementById('nr_tol').value = tol;
+        solveNR();
+    } else if (method === 'bisec') {
+        if (fx) document.getElementById('bi_fx').value = normExpr(fx);
+        if (a !== null) document.getElementById('bi_a').value = a;
+        if (b !== null) document.getElementById('bi_b').value = b;
+        if (tol !== null) document.getElementById('bi_tol').value = tol;
+        solveBiseccion();
+    } else if (method === 'pfijo') {
+        if (fx) document.getElementById('pf_fx').value = normExpr(fx);
+        if (gx) document.getElementById('pf_gx').value = normExpr(gx);
+        if (x0 !== null) document.getElementById('pf_x0').value = x0;
+        if (tol !== null) document.getElementById('pf_tol').value = tol;
+        solvePF();
+    } else if (method === 'gj') {
+        // Intentar parsear ecuaciones del texto
+        const eqMatch = text.match(/(\d+\s*x.*?=.*?)(?:\n|,|;|$)/gi);
+        if (eqMatch) {
+            document.getElementById('gj_equations').value = eqMatch.join(', ');
+            parseEquations();
+            solveGJ();
+        }
+    }
+}
+
+function hideDetected() {
+    document.getElementById('detectedBadge').innerHTML = '';
+    document.getElementById('detectedValues').style.display = 'none';
+}
+
+/* ================================================================
+   NEWTON-RAPHSON
+   ================================================================ */
+function loadExampleNR() {
+    document.getElementById('nr_fx').value = 'exp(x) - 2 + x^2';
+    document.getElementById('nr_dfx').value = '';
+    document.getElementById('nr_x0').value = '0';
+    document.getElementById('nr_tol').value = '0.01';
+}
+
+function solveNR() {
+    const out = document.getElementById('nr_output');
+    out.innerHTML = '';
+
+    let fxStr = document.getElementById('nr_fx').value.trim();
+    let dfxStr = document.getElementById('nr_dfx').value.trim();
+    let x0 = parseFloat(document.getElementById('nr_x0').value);
+    let tol = parseFloat(document.getElementById('nr_tol').value);
+    let maxi = parseInt(document.getElementById('nr_maxi').value) || 50;
+
+    if (!fxStr || isNaN(x0)) { alert('Ingresa f(x) y x₀ como mínimo.'); return; }
+    if (isNaN(tol) || tol <= 0) tol = 0.01;
+
+    fxStr = normExpr(fxStr);
+
+    let f, df;
+    try {
+        const nodeF = math.parse(fxStr);
+        f = (x) => nodeF.evaluate({ x });
+
+        if (!dfxStr) {
+            const nodeDf = math.derivative(nodeF, 'x');
+            dfxStr = nodeDf.toString();
+            document.getElementById('nr_dfx').value = dfxStr;
+            df = (x) => nodeDf.evaluate({ x });
+        } else {
+            dfxStr = normExpr(dfxStr);
+            df = (x) => math.evaluate(dfxStr, { x });
+        }
+    } catch (e) {
+        out.innerHTML = `<div class="glass step-card"><span class="badge badge-error">Error en la función: ${e.message}</span></div>`;
+        return;
+    }
+
+    let xi = x0, iter = 1;
+    let html = '', tableData = [], chartLabels = [], chartData = [];
+
+    html += `<div class="glass step-card">
+        <h4 class="step-header">📋 Datos del Problema</h4>
+        <div class="math-block">
+            f(x) = ${fxStr}<br>
+            f'(x) = ${dfxStr}<br>
+            x<sub>0</sub> = ${x0}<br>
+            Tolerancia = ${tol}%<br>
+            Fórmula: x<sub>i+1</sub> = x<sub>i</sub> − f(x<sub>i</sub>) / f'(x<sub>i</sub>)
+        </div>
+    </div>`;
+
+    while (iter <= maxi) {
+        let fxi, dfxi;
+        try {
+            fxi = f(xi);
+            dfxi = df(xi);
+        } catch (e) {
+            html += `<div class="glass step-card"><span class="badge badge-error">Error evaluando en x = ${xi}: ${e.message}</span></div>`;
+            break;
+        }
+
+        if (Math.abs(dfxi) < 1e-14) {
+            html += `<div class="glass step-card"><span class="badge badge-error">⚠️ f'(${fmt(xi)}) ≈ 0. La derivada es cero, el método no puede continuar.</span></div>`;
+            break;
+        }
+
+        let xi1 = xi - fxi / dfxi;
+        let ea = (xi1 !== 0) ? Math.abs((xi1 - xi) / xi1) * 100 : 100;
+
+        let isConv = ea <= tol;
+        let badgeCls = isConv ? 'badge-success' : 'badge-warning';
+        let badgeTxt = isConv ? '✅ Converge' : '⏩ Continuar';
+
+        html += `
+        <div class="glass step-card">
+            <h4 class="step-header">══════ Iteración N°${iter} ══════</h4>
+            <div class="math-block">
+                <b>1) Evaluar f(x<sub>i</sub>) y f'(x<sub>i</sub>)</b><br>
+                x<sub>i</sub> = ${fmt(xi)}<br><br>
+                f(x) = ${fxStr}<br>
+                f(${fmt(xi)}) = <span class="result-box">${fmt(fxi)}</span><br><br>
+                f'(x) = ${dfxStr}<br>
+                f'(${fmt(xi)}) = <span class="result-box">${fmt(dfxi)}</span>
+            </div>
+            <div class="math-block">
+                <b>2) Calcular x<sub>i+1</sub></b><br>
+                x<sub>${iter}</sub> = x<sub>${iter - 1}</sub> − f(x<sub>${iter - 1}</sub>) / f'(x<sub>${iter - 1}</sub>)<br>
+                x<sub>${iter}</sub> = ${fmt(xi)} − (${fmt(fxi)}) / (${fmt(dfxi)})<br>
+                x<sub>${iter}</sub> = ${fmt(xi)} − (${fmt(fxi / dfxi)})<br>
+                <span class="result-box">x<sub>${iter}</sub> = ${fmt(xi1)}</span>
+            </div>
+            <div class="math-block">
+                <b>3) Error aproximado</b><br>
+                ea = |x<sub>i+1</sub> − x<sub>i</sub>| / |x<sub>i+1</sub>| × 100%<br>
+                ea = |${fmt(xi1)} − ${fmt(xi)}| / |${fmt(xi1)}| × 100%<br>
+                ea = ${fmt(Math.abs(xi1 - xi))} / ${fmt(Math.abs(xi1))} × 100%<br>
+                <span class="result-box">ea = ${fmt(ea)}%</span><br><br>
+                ${fmt(ea)}% ${isConv ? '≤' : '>'} ${tol}% → <span class="badge ${badgeCls}">${badgeTxt}</span>
+            </div>
+        </div>`;
+
+        tableData.push({ i: iter, xi: fmt(xi), fxi: fmt(fxi), dfxi: fmt(dfxi), xi1: fmt(xi1), ea: fmt(ea) });
+        chartLabels.push(`It ${iter}`);
+        chartData.push(fmt(ea));
+
+        if (isConv) {
+            html += `<div class="glass step-card final">
+                <h3 style="color:var(--success);margin:0 0 0.5rem 0;">🎉 ¡Raíz encontrada!</h3>
+                <p>La raíz aproximada es <span class="result-box">${fmt(xi1, 8)}</span> con un error de ${fmt(ea)}% (en ${iter} iteraciones).</p>
+            </div>`;
+            break;
+        }
+        xi = xi1;
+        iter++;
+    }
+
+    // Tabla resumen
+    html += `<div class="glass step-card" style="overflow-x:auto;">
+        <h4 class="step-header">📊 Tabla Resumen</h4>
+        <table>
+            <tr><th>i</th><th>x<sub>i</sub></th><th>f(x<sub>i</sub>)</th><th>f'(x<sub>i</sub>)</th><th>x<sub>i+1</sub></th><th>Error (%)</th></tr>`;
+    tableData.forEach(r => {
+        html += `<tr><td>${r.i}</td><td>${r.xi}</td><td>${r.fxi}</td><td>${r.dfxi}</td><td>${r.xi1}</td><td>${r.ea}</td></tr>`;
+    });
+    html += '</table></div>';
+
+    out.innerHTML = html;
+    if (chartData.length > 1) plotChart('nr_chart', 'nr_chart_container', chartLabels, chartData, 'Convergencia del Error — Newton-Raphson');
+}
+
+/* ================================================================
+   BISECCIÓN
+   ================================================================ */
+function loadExampleBisec() {
+    document.getElementById('bi_fx').value = 'exp(3*x) - 4';
+    document.getElementById('bi_a').value = '0';
+    document.getElementById('bi_b').value = '1';
+    document.getElementById('bi_tol').value = '1';
+}
+
+function solveBiseccion() {
+    const out = document.getElementById('bi_output');
+    out.innerHTML = '';
+
+    let fxStr = document.getElementById('bi_fx').value.trim();
+    let a = parseFloat(document.getElementById('bi_a').value);
+    let b = parseFloat(document.getElementById('bi_b').value);
+    let tol = parseFloat(document.getElementById('bi_tol').value);
+    let maxi = parseInt(document.getElementById('bi_maxi').value) || 50;
+
+    if (!fxStr || isNaN(a) || isNaN(b)) { alert('Ingresa f(x), a y b.'); return; }
+    if (isNaN(tol) || tol <= 0) tol = 1;
+
+    fxStr = normExpr(fxStr);
+    let f;
+    try { f = (x) => math.evaluate(fxStr, { x }); } catch (e) {
+        out.innerHTML = `<div class="glass step-card"><span class="badge badge-error">Error: ${e.message}</span></div>`; return;
+    }
+
+    let fa = f(a), fb = f(b);
+    if (fa * fb >= 0) {
+        out.innerHTML = `<div class="glass step-card"><span class="badge badge-error">⚠️ f(a)·f(b) debe ser &lt; 0. f(${a})=${fmt(fa)}, f(${b})=${fmt(fb)}. No hay cambio de signo.</span></div>`;
+        return;
+    }
+
+    let iter = 1;
+    let html = '', tableData = [], chartLabels = [], chartData = [];
+
+    html += `<div class="glass step-card">
+        <h4 class="step-header">📋 Datos del Problema</h4>
+        <div class="math-block">
+            f(x) = ${fxStr}<br>
+            Intervalo = [${a}, ${b}]<br>
+            Tolerancia = ${tol}%<br>
+            Fórmulas: m = (a+b)/2 &nbsp;|&nbsp; e = (b−a)/2
+        </div>
+    </div>`;
+
+    while (iter <= maxi) {
+        let m = (a + b) / 2;
+        fa = f(a); fb = f(b); let fm = f(m);
+
+        let e_abs = (b - a) / 2;
+        let e_pct = e_abs * 100;
+
+        let isConv = e_pct <= tol || Math.abs(fm) < 1e-14;
+        let badgeCls = isConv ? 'badge-success' : 'badge-warning';
+        let badgeTxt = isConv ? '✅ Converge' : '⏩ Continuar';
+
+        let prod = fa * fm;
+        let newA = prod < 0 ? a : m;
+        let newB = prod < 0 ? m : b;
+
+        html += `
+        <div class="glass step-card">
+            <h4 class="step-header">══════ Iteración N°${iter}, i = ${iter} ══════</h4>
+            <div class="math-block">
+                <b>Datos:</b><br>
+                f(x) = ${fxStr}<br>
+                (a, b) = (${fmt(a)}, ${fmt(b)})<br>
+                e = ${tol}%
+            </div>
+            <div class="math-block">
+                <b>I) Calcular punto medio</b><br>
+                m = (a + b) / 2 = (${fmt(a)} + ${fmt(b)}) / 2<br>
+                <span class="result-box">m = ${fmt(m)}</span>
+            </div>
+            <div class="math-block">
+                <b>II) Evaluar f(a), f(b), f(m)</b><br>
+                f(a) = f(${fmt(a)}) = ${fmt(fa)}<br>
+                f(b) = f(${fmt(b)}) = ${fmt(fb)}<br>
+                f(m) = f(${fmt(m)}) = <span class="result-box">${fmt(fm)}</span>
+            </div>
+            <div class="math-block">
+                <b>III) Determinar nuevo intervalo</b><br>
+                f(a) · f(m) = (${fmt(fa)})(${fmt(fm)}) = ${fmt(prod)}<br>
+                ${prod < 0 ? `${fmt(prod)} < 0 → La raíz está en [a, m]` : `${fmt(prod)} > 0 → La raíz está en [m, b]`}<br>
+                <span class="result-box">Nuevo intervalo: (${fmt(newA)}, ${fmt(newB)})</span>
+            </div>
+            <div class="math-block">
+                <b>IV) Calcular error</b><br>
+                e = (b − a) / 2 = (${fmt(b)} − ${fmt(a)}) / 2 = ${fmt(e_abs)}<br>
+                e = ${fmt(e_abs)} × 100% = ${fmt(e_pct)}%<br><br>
+                ${fmt(e_pct)}% ${isConv ? '≤' : '>'} ${tol}% → <span class="badge ${badgeCls}">${badgeTxt}</span>
+            </div>
+        </div>`;
+
+        tableData.push({ i: iter, a: fmt(a), b: fmt(b), m: fmt(m), fa: fmt(fa), fb: fmt(fb), fm: fmt(fm), err: fmt(e_pct) });
+        chartLabels.push(`It ${iter}`);
+        chartData.push(fmt(e_pct));
+
+        if (isConv) {
+            html += `<div class="glass step-card final">
+                <h3 style="color:var(--success);margin:0 0 0.5rem 0;">🎉 ¡Raíz encontrada!</h3>
+                <p>La raíz aproximada es <span class="result-box">${fmt(m, 8)}</span> con un error de ${fmt(e_pct)}% (en ${iter} iteraciones).</p>
+            </div>`;
+            break;
+        }
+
+        a = newA; b = newB;
+        iter++;
+    }
+
+    html += `<div class="glass step-card" style="overflow-x:auto;">
+        <h4 class="step-header">📊 Tabla Resumen</h4>
+        <table>
+            <tr><th>i</th><th>a</th><th>b</th><th>m</th><th>f(a)</th><th>f(b)</th><th>f(m)</th><th>Error (%)</th></tr>`;
+    tableData.forEach(r => {
+        html += `<tr><td>${r.i}</td><td>${r.a}</td><td>${r.b}</td><td>${r.m}</td><td>${r.fa}</td><td>${r.fb}</td><td>${r.fm}</td><td>${r.err}</td></tr>`;
+    });
+    html += '</table></div>';
+
+    out.innerHTML = html;
+    if (chartData.length > 1) plotChart('bi_chart', 'bi_chart_container', chartLabels, chartData, 'Convergencia del Error — Bisección');
+}
+
+/* ================================================================
+   PUNTO FIJO
+   ================================================================ */
+function loadExamplePF() {
+    document.getElementById('pf_fx').value = '2*sin(x) - x';
+    document.getElementById('pf_gx').value = '2*sin(x)';
+    document.getElementById('pf_x0').value = '1.5';
+    document.getElementById('pf_tol').value = '0.01';
+}
+
+function solvePF() {
+    const out = document.getElementById('pf_output');
+    out.innerHTML = '';
+
+    let fxStr = document.getElementById('pf_fx').value.trim();
+    let gxStr = document.getElementById('pf_gx').value.trim();
+    let x0 = parseFloat(document.getElementById('pf_x0').value);
+    let tol = parseFloat(document.getElementById('pf_tol').value);
+    let maxi = parseInt(document.getElementById('pf_maxi').value) || 50;
+
+    if (!gxStr || isNaN(x0)) { alert('Ingresa g(x) y x₀ como mínimo.'); return; }
+    if (isNaN(tol) || tol <= 0) tol = 0.01;
+
+    gxStr = normExpr(gxStr);
+    if (fxStr) fxStr = normExpr(fxStr);
+
+    let g;
+    try { g = (x) => math.evaluate(gxStr, { x }); } catch (e) {
+        out.innerHTML = `<div class="glass step-card"><span class="badge badge-error">Error en g(x): ${e.message}</span></div>`; return;
+    }
+
+    let xi = x0, iter = 1;
+    let html = '', tableData = [], chartLabels = [], chartData = [];
+
+    html += `<div class="glass step-card">
+        <h4 class="step-header">📋 Datos del Problema</h4>
+        <div class="math-block">
+            ${fxStr ? `f(x) = ${fxStr}<br>` : ''}
+            g(x) = ${gxStr}<br>
+            x<sub>0</sub> = ${x0}<br>
+            Tolerancia = ${tol}%<br>
+            Fórmula: x<sub>i+1</sub> = g(x<sub>i</sub>)
+        </div>
+    </div>`;
+
+    while (iter <= maxi) {
+        let xi1;
+        try { xi1 = g(xi); } catch (e) {
+            html += `<div class="glass step-card"><span class="badge badge-error">Error evaluando g(${fmt(xi)}): ${e.message}</span></div>`;
+            break;
+        }
+
+        let ea = (xi1 !== 0) ? Math.abs((xi1 - xi) / xi1) * 100 : 100;
+        let isConv = ea <= tol;
+        let badgeCls = isConv ? 'badge-success' : 'badge-warning';
+        let badgeTxt = isConv ? '✅ Converge' : '⏩ Continuar';
+
+        html += `
+        <div class="glass step-card">
+            <h4 class="step-header">══════ Iteración N°${iter} ══════</h4>
+            <div class="math-block">
+                <b>1) Calcular x<sub>i+1</sub> = g(x<sub>i</sub>)</b><br>
+                x<sub>i</sub> = ${fmt(xi)}<br>
+                x<sub>${iter}</sub> = g(${fmt(xi)})<br>
+                g(x) = ${gxStr}<br>
+                <span class="result-box">x<sub>${iter}</sub> = ${fmt(xi1)}</span>
+            </div>
+            <div class="math-block">
+                <b>2) Error aproximado</b><br>
+                ea = |x<sub>i+1</sub> − x<sub>i</sub>| / |x<sub>i+1</sub>| × 100%<br>
+                ea = |${fmt(xi1)} − ${fmt(xi)}| / |${fmt(xi1)}| × 100%<br>
+                ea = ${fmt(Math.abs(xi1 - xi))} / ${fmt(Math.abs(xi1))} × 100%<br>
+                <span class="result-box">ea = ${fmt(ea)}%</span><br><br>
+                ${fmt(ea)}% ${isConv ? '≤' : '>'} ${tol}% → <span class="badge ${badgeCls}">${badgeTxt}</span>
+            </div>
+        </div>`;
+
+        tableData.push({ i: iter, xi: fmt(xi), xi1: fmt(xi1), ea: fmt(ea) });
+        chartLabels.push(`It ${iter}`);
+        chartData.push(fmt(ea));
+
+        if (isConv) {
+            html += `<div class="glass step-card final">
+                <h3 style="color:var(--success);margin:0 0 0.5rem 0;">🎉 ¡Raíz encontrada!</h3>
+                <p>La raíz aproximada es <span class="result-box">${fmt(xi1, 8)}</span> con un error de ${fmt(ea)}% (en ${iter} iteraciones).</p>
+            </div>`;
+            break;
+        }
+
+        if (ea > 1e8 || !isFinite(xi1)) {
+            html += `<div class="glass step-card"><span class="badge badge-error">⚠️ El método diverge. Prueba con otro g(x) o x₀.</span></div>`;
+            break;
+        }
+
+        xi = xi1;
+        iter++;
+    }
+
+    html += `<div class="glass step-card" style="overflow-x:auto;">
+        <h4 class="step-header">📊 Tabla Resumen</h4>
+        <table>
+            <tr><th>i</th><th>x<sub>i</sub></th><th>x<sub>i+1</sub></th><th>Error (%)</th></tr>`;
+    tableData.forEach(r => {
+        html += `<tr><td>${r.i}</td><td>${r.xi}</td><td>${r.xi1}</td><td>${r.ea}</td></tr>`;
+    });
+    html += '</table></div>';
+
+    out.innerHTML = html;
+    if (chartData.length > 1) plotChart('pf_chart', 'pf_chart_container', chartLabels, chartData, 'Convergencia del Error — Punto Fijo');
+}
+
+/* ================================================================
+   GAUSS-JORDAN
+   ================================================================ */
+function generateMatrixInput() {
+    const size = parseInt(document.getElementById('gj_size').value);
+    const container = document.getElementById('matrix_container');
+    let html = '<div class="matrix-grid" style="grid-template-columns: repeat(' + (size + 2) + ', auto);">';
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j <= size; j++) {
+            if (j === size) {
+                html += '<div class="matrix-sep">│</div>';
+                html += `<input type="number" step="any" id="gj_${i}_${j}" class="matrix-input" placeholder="b${i + 1}">`;
+            } else {
+                html += `<input type="number" step="any" id="gj_${i}_${j}" class="matrix-input" placeholder="a${i + 1}${j + 1}">`;
+            }
+        }
+    }
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function parseEquations() {
+    const raw = document.getElementById('gj_equations').value.trim();
+    if (!raw) return;
+
+    const eqs = raw.split(/[,;]/g).map(s => s.trim()).filter(Boolean);
+    const n = eqs.length;
+    if (n < 2 || n > 6) { alert('Ingresa entre 2 y 6 ecuaciones.'); return; }
+
+    document.getElementById('gj_size').value = n;
+    generateMatrixInput();
+
+    eqs.forEach((eq, i) => {
+        const parts = eq.split('=');
+        if (parts.length !== 2) return;
+        const rhs = parseFloat(parts[1].trim()) || 0;
+        const lhs = parts[0].trim();
+
+        // Parse coefficients for x1..xn (x, y, z or x1, x2, x3)
+        const varNames = n <= 3 ? ['x', 'y', 'z'] : Array.from({ length: n }, (_, k) => `x${k + 1}`);
+
+        for (let j = 0; j < n; j++) {
+            const v = varNames[j];
+            // Match patterns like: +3x, -2y, +z, -z, 3x, etc.
+            const regex = new RegExp(`([+-]?\\s*\\d*\\.?\\d*)\\s*${v}(?!\\d)`, 'i');
+            const match = lhs.match(regex);
+            let coeff = 0;
+            if (match) {
+                let s = match[1].replace(/\s/g, '');
+                if (s === '' || s === '+') coeff = 1;
+                else if (s === '-') coeff = -1;
+                else coeff = parseFloat(s);
+            }
+            const el = document.getElementById(`gj_${i}_${j}`);
+            if (el) el.value = coeff;
+        }
+        const rhsEl = document.getElementById(`gj_${i}_${n}`);
+        if (rhsEl) rhsEl.value = rhs;
+    });
+}
+
+function loadExampleGJ() {
+    document.getElementById('gj_size').value = '3';
+    generateMatrixInput();
+    const data = [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3]];
+    for (let i = 0; i < 3; i++)
+        for (let j = 0; j <= 3; j++)
+            document.getElementById(`gj_${i}_${j}`).value = data[i][j];
+}
+
+function formatMatrix(mat) {
+    let n = mat.length;
+    let s = '<table style="width:auto;display:inline-table;text-align:right;font-size:0.9rem;">';
+    for (let i = 0; i < n; i++) {
+        s += '<tr>';
+        for (let j = 0; j <= n; j++) {
+            let style = j === n ? 'border-left:2px solid var(--accent);padding-left:10px;' : '';
+            let val = mat[i][j];
+            if (Math.abs(val) < 1e-12) val = 0;
+            s += `<td style="${style}">${fmt(val, 4)}</td>`;
+        }
+        s += '</tr>';
+    }
+    return s + '</table>';
+}
+
+function solveGJ() {
+    const size = parseInt(document.getElementById('gj_size').value);
+    let mat = [];
+    for (let i = 0; i < size; i++) {
+        let row = [];
+        for (let j = 0; j <= size; j++) {
+            let val = parseFloat(document.getElementById(`gj_${i}_${j}`).value);
+            if (isNaN(val)) { alert('Llena todos los coeficientes de la matriz.'); return; }
+            row.push(val);
+        }
+        mat.push(row);
+    }
+
+    const out = document.getElementById('gj_output');
+    let html = '';
+
+    html += `<div class="glass step-card">
+        <h4 class="step-header">📋 Matriz Aumentada Inicial</h4>
+        <div class="math-block" style="text-align:center;">${formatMatrix(mat)}</div>
+    </div>`;
+
+    let step = 1;
+
+    for (let i = 0; i < size; i++) {
+        // Pivoteo parcial
+        if (Math.abs(mat[i][i]) < 1e-12) {
+            let swap = -1;
+            for (let k = i + 1; k < size; k++) {
+                if (Math.abs(mat[k][i]) > 1e-12) { swap = k; break; }
+            }
+            if (swap === -1) {
+                html += `<div class="glass step-card"><span class="badge badge-error">El sistema no tiene solución única (pivote = 0).</span></div>`;
+                out.innerHTML = html; return;
+            }
+            [mat[i], mat[swap]] = [mat[swap], mat[i]];
+            html += `<div class="glass step-card">
+                <h4 class="step-header">Paso ${step}: Intercambio F${i + 1} ↔ F${swap + 1}</h4>
+                <div class="math-block" style="text-align:center;">${formatMatrix(mat)}</div>
+            </div>`;
+            step++;
+        }
+
+        // Normalizar fila (pivote = 1)
+        let pivot = mat[i][i];
+        if (Math.abs(pivot - 1) > 1e-12) {
+            for (let j = 0; j <= size; j++) mat[i][j] /= pivot;
+            html += `<div class="glass step-card">
+                <h4 class="step-header">Paso ${step}: F${i + 1} = F${i + 1} / (${fmt(pivot, 4)}) → Pivote = 1</h4>
+                <div class="math-block" style="text-align:center;">${formatMatrix(mat)}</div>
+            </div>`;
+            step++;
+        }
+
+        // Eliminación
+        for (let k = 0; k < size; k++) {
+            if (k !== i) {
+                let factor = mat[k][i];
+                if (Math.abs(factor) > 1e-12) {
+                    for (let j = 0; j <= size; j++) mat[k][j] -= factor * mat[i][j];
+                    let sign = factor > 0 ? '−' : '+';
+                    html += `<div class="glass step-card">
+                        <h4 class="step-header">Paso ${step}: F${k + 1} = F${k + 1} ${sign} ${fmt(Math.abs(factor), 4)}·F${i + 1}</h4>
+                        <div class="math-block" style="text-align:center;">${formatMatrix(mat)}</div>
+                    </div>`;
+                    step++;
+                }
+            }
+        }
+    }
+
+    // Verificar tipo de solución
+    let solType = 'unique';
+    for (let i = 0; i < size; i++) {
+        let allZero = true;
+        for (let j = 0; j < size; j++) {
+            if (Math.abs(mat[i][j]) > 1e-10) allZero = false;
+        }
+        if (allZero) {
+            solType = Math.abs(mat[i][size]) > 1e-10 ? 'none' : 'infinite';
+            if (solType === 'none') break;
+        }
+    }
+
+    if (solType === 'none') {
+        html += `<div class="glass step-card"><span class="badge badge-error">❌ El sistema NO tiene solución (incompatible).</span></div>`;
+    } else if (solType === 'infinite') {
+        html += `<div class="glass step-card"><span class="badge badge-warning">♾️ El sistema tiene INFINITAS soluciones.</span></div>`;
+    } else {
+        let solHtml = `<div class="glass step-card final">
+            <h3 style="color:var(--success);margin:0 0 0.5rem 0;">🎉 Solución Única</h3>
+            <div class="math-block">`;
+        for (let i = 0; i < size; i++) {
+            let val = mat[i][size];
+            if (Math.abs(val) < 1e-12) val = 0;
+            solHtml += `x<sub>${i + 1}</sub> = <span class="result-box">${fmt(val, 6)}</span><br><br>`;
+        }
+        solHtml += '</div></div>';
+        html += solHtml;
+    }
+
+    out.innerHTML = html;
+}
+
+/* ================================================================
+   INICIALIZACIÓN
+   ================================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+    generateMatrixInput();
+
+    // Permitir Ctrl+Enter en el textarea inteligente
+    document.getElementById('smartInput').addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            analyzeInput();
+        }
+    });
+});
+</script>
+</body>
+</html>
