@@ -369,6 +369,21 @@
         }
         .dyn-row input { flex: 1; }
         .btn-small { padding: 0.5rem; border:none; border-radius:4px; cursor:pointer; background:var(--primary); color:white;}
+        .theory-box {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-left: 4px solid var(--secondary);
+            border-radius: 8px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+        .theory-box h4 {
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+        .theory-box b { color: var(--primary); }
     </style>
 </head>
 <body>
@@ -497,35 +512,35 @@
 /* ================= ESTRUCTURA Y DATOS ================= */
 const methods = {
     raices: [
-        { id: 'nr', name: 'Newton-Raphson', inputs: ['fx', 'fdx', 'x0', 'tol', 'iter'] },
-        { id: 'bis', name: 'Bisección', inputs: ['fx', 'a', 'b', 'tol', 'iter'] },
-        { id: 'pf', name: 'Punto Fijo', inputs: ['fx', 'gx', 'x0', 'tol', 'iter'] },
-        { id: 'sec', name: 'Secante', inputs: ['fx', 'x0', 'x1', 'tol', 'iter'] },
-        { id: 'rf', name: 'Regla Falsa', inputs: ['fx', 'a', 'b', 'tol', 'iter'] }
+        { id: 'nr', name: 'Newton-Raphson', inputs: ['fx', 'fdx', 'x0', 'tol', 'iter'], theory: '<h4>Método de Newton-Raphson</h4><p>Basado en Taylor. Fórmula: x_{i+1} = x_i - f(x_i)/f\'(x_i). Convergencia cuadrática. Requiere f\'(x) ≠ 0.</p>', examples: [{ name: 'Exponencial', data: { fx: 'exp(x) - 2 + x^2', x0: '0', tol: '0.01', iter: '50' } }, { name: 'Cúbica', data: { fx: 'x^3 - 2*x - 5', x0: '2', tol: '0.01', iter: '50' } }, { name: 'Trigonométrica', data: { fx: 'cos(x) - x', x0: '0.5', tol: '0.001', iter: '50' } }] },
+        { id: 'bis', name: 'Bisección', inputs: ['fx', 'a', 'b', 'tol', 'iter'], theory: '<h4>Método de Bisección</h4><p>Basado en el Teorema del Valor Intermedio. Divide el intervalo a la mitad. Convergencia lineal garantizada si f(a)·f(b) < 0.</p>', examples: [{ name: 'Ejemplo 1', data: { fx: 'exp(3*x)-4', a: '0', b: '1', tol: '0.01', iter: '50' } }, { name: 'Ejemplo 2', data: { fx: 'x^3-2*x-5', a: '2', b: '3', tol: '0.01', iter: '50' } }, { name: 'Ejemplo 3', data: { fx: 'sin(x)-x/2', a: '1', b: '2', tol: '0.01', iter: '50' } }] },
+        { id: 'pf', name: 'Punto Fijo', inputs: ['fx', 'gx', 'x0', 'tol', 'iter'], theory: '<h4>Método de Punto Fijo</h4><p>Transforma f(x)=0 en x=g(x). Converge si |g\'(x)| < 1 en la vecindad de la raíz.</p>', examples: [{ name: 'Ejemplo 1', data: { fx: '2*sin(x)-x', gx: '2*sin(x)', x0: '1.5', tol: '0.01', iter: '50' } }, { name: 'Ejemplo 2', data: { fx: 'exp(-x)-x', gx: 'exp(-x)', x0: '0.5', tol: '0.01', iter: '50' } }, { name: 'Ejemplo 3', data: { fx: 'x^2-3', gx: 'sqrt(3+x)-1', x0: '1.5', tol: '0.01', iter: '50' } }] },
+        { id: 'sec', name: 'Secante', inputs: ['fx', 'x0', 'x1', 'tol', 'iter'], theory: '<h4>Método de la Secante</h4><p>Similar a Newton pero aproxima f\'(x) con diferencias finitas. No requiere derivada. Convergencia superlineal (orden ≈ 1.618).</p>', examples: [{ name: 'Ejemplo 1', data: { fx: 'x^3-2*x-5', x0: '2', x1: '3', tol: '0.01', iter: '50' } }, { name: 'Ejemplo 2', data: { fx: 'exp(x)-3', x0: '0', x1: '1', tol: '0.01', iter: '50' } }, { name: 'Ejemplo 3', data: { fx: 'x^2-4*sin(x)', x0: '1', x1: '2', tol: '0.01', iter: '50' } }] },
+        { id: 'rf', name: 'Regla Falsa', inputs: ['fx', 'a', 'b', 'tol', 'iter'], theory: '<h4>Método de Regla Falsa</h4><p>Combina la seguridad de bisección con la velocidad de la secante. Siempre converge si f(a)·f(b) < 0.</p>', examples: [{ name: 'Ejemplo 1', data: { fx: 'x^3-2*x-5', a: '2', b: '3', tol: '0.01', iter: '50' } }, { name: 'Ejemplo 2', data: { fx: 'exp(x)-3', a: '0', b: '2', tol: '0.01', iter: '50' } }, { name: 'Ejemplo 3', data: { fx: 'x*sin(x)-1', a: '0', b: '2', tol: '0.01', iter: '50' } }] }
     ],
     sistemas: [
-        { id: 'gj', name: 'Gauss-Jordan', inputs: ['sys_n', 'sys_matrix'] },
-        { id: 'jac', name: 'Jacobi', inputs: ['sys_n', 'sys_matrix', 'tol', 'iter'] },
-        { id: 'gs', name: 'Gauss-Seidel', inputs: ['sys_n', 'sys_matrix', 'tol', 'iter'] },
-        { id: 'lu', name: 'Factorización LU', inputs: ['sys_n', 'sys_matrix'] }
+        { id: 'gj', name: 'Gauss-Jordan', inputs: ['sys_n', 'sys_matrix'], theory: '<h4>Método de Gauss-Jordan</h4><p>Eliminación por filas hasta RREF. Encuentra solución exacta. Complejidad O(n³).</p>', examples: [{ name: 'Ejemplo 1', data: { sys_n: '3', sys_matrix: '2,1,-1,8\n-3,-1,2,-11\n-2,1,2,-3' } }, { name: 'Ejemplo 2', data: { sys_n: '3', sys_matrix: '1,1,1,6\n2,3,1,14\n1,2,3,14' } }] },
+        { id: 'jac', name: 'Jacobi', inputs: ['sys_n', 'sys_matrix', 'tol', 'iter'], theory: '<h4>Método de Jacobi</h4><p>Método iterativo para sistemas. Converge si la matriz es diagonalmente dominante. Usa valores de la iteración anterior.</p>', examples: [{ name: 'Ejemplo 1', data: { sys_n: '3', sys_matrix: '2,1,-1,8\n-3,-1,2,-11\n-2,1,2,-3', tol: '0.01', iter: '25' } }, { name: 'Ejemplo 2', data: { sys_n: '3', sys_matrix: '1,1,1,6\n2,3,1,14\n1,2,3,14', tol: '0.01', iter: '25' } }] },
+        { id: 'gs', name: 'Gauss-Seidel', inputs: ['sys_n', 'sys_matrix', 'tol', 'iter'], theory: '<h4>Método de Gauss-Seidel</h4><p>Similar a Jacobi pero usa valores actualizados inmediatamente. Generalmente converge más rápido.</p>', examples: [{ name: 'Ejemplo 1', data: { sys_n: '3', sys_matrix: '2,1,-1,8\n-3,-1,2,-11\n-2,1,2,-3', tol: '0.01', iter: '25' } }, { name: 'Ejemplo 2', data: { sys_n: '3', sys_matrix: '1,1,1,6\n2,3,1,14\n1,2,3,14', tol: '0.01', iter: '25' } }] },
+        { id: 'lu', name: 'Factorización LU', inputs: ['sys_n', 'sys_matrix'], theory: '<h4>Factorización LU</h4><p>Descompone A = L·U. Eficiente para resolver múltiples sistemas con la misma matriz.</p>', examples: [{ name: 'Ejemplo 1', data: { sys_n: '3', sys_matrix: '2,1,-1,8\n-3,-1,2,-11\n-2,1,2,-3' } }, { name: 'Ejemplo 2', data: { sys_n: '3', sys_matrix: '1,1,1,6\n2,3,1,14\n1,2,3,14' } }] }
     ],
     interpolacion: [
-        { id: 'lag', name: 'Lagrange', inputs: ['points', 'x_eval'] },
-        { id: 'new', name: 'Newton (Dif. Divididas)', inputs: ['points', 'x_eval'] },
-        { id: 'spline', name: 'Splines Cúbicos', inputs: ['points', 'x_eval'] }
+        { id: 'lag', name: 'Lagrange', inputs: ['points', 'x_eval'], theory: '<h4>Interpolación de Lagrange</h4><p>Interpolación polinómica exacta. P(x) pasa por todos los n puntos. Grado n-1.</p>', examples: [{ name: 'Ejemplo 1', data: { x_eval: '2.5' } }, { name: 'Ejemplo 2', data: { x_eval: '1.5' } }] },
+        { id: 'new', name: 'Newton (Dif. Divididas)', inputs: ['points', 'x_eval'], theory: '<h4>Newton (Diferencias Divididas)</h4><p>Usa tabla de diferencias divididas. Fácil agregar nuevos puntos sin recalcular todo.</p>', examples: [{ name: 'Ejemplo 1', data: { x_eval: '2.5' } }, { name: 'Ejemplo 2', data: { x_eval: '1.5' } }] },
+        { id: 'spline', name: 'Splines Cúbicos', inputs: ['points', 'x_eval'], theory: '<h4>Splines Cúbicos</h4><p>Polinomios cúbicos por tramos. Suavidad C². Evita el fenómeno de Runge.</p>', examples: [{ name: 'Ejemplo 1', data: { x_eval: '1.5' } }] }
     ],
     integracion: [
-        { id: 'trap', name: 'Regla del Trapecio', inputs: ['fx', 'a', 'b', 'n_int'] },
-        { id: 's13', name: 'Simpson 1/3', inputs: ['fx', 'a', 'b', 'n_even'] },
-        { id: 's38', name: 'Simpson 3/8', inputs: ['fx', 'a', 'b', 'n_mult3'] },
-        { id: 'romb', name: 'Romberg', inputs: ['fx', 'a', 'b', 'n_int'] }
+        { id: 'trap', name: 'Regla del Trapecio', inputs: ['fx', 'a', 'b', 'n_int'], theory: '<h4>Regla del Trapecio</h4><p>Aproxima el área bajo la curva con trapecios. Error O(h²). Fórmula: h/2·[f(x₀) + 2Σf(xᵢ) + f(xₙ)].</p>', examples: [{ name: 'Ejemplo 1', data: { fx: 'exp(x)', a: '0', b: '1', n_int: '4' } }, { name: 'Ejemplo 2', data: { fx: 'sin(x)', a: '0', b: '3.14159', n_int: '6' } }, { name: 'Ejemplo 3', data: { fx: '1/(1+x^2)', a: '0', b: '1', n_int: '8' } }] },
+        { id: 's13', name: 'Simpson 1/3', inputs: ['fx', 'a', 'b', 'n_even'], theory: '<h4>Simpson 1/3</h4><p>Usa parábolas para aproximar. Error O(h⁴). Requiere n par.</p>', examples: [{ name: 'Ejemplo 1', data: { fx: 'exp(x)', a: '0', b: '1', n_even: '4' } }, { name: 'Ejemplo 2', data: { fx: 'sin(x)', a: '0', b: '3.14159', n_even: '4' } }, { name: 'Ejemplo 3', data: { fx: '1/(1+x^2)', a: '0', b: '1', n_even: '8' } }] },
+        { id: 's38', name: 'Simpson 3/8', inputs: ['fx', 'a', 'b', 'n_mult3'], theory: '<h4>Simpson 3/8</h4><p>Usa polinomios cúbicos. Error O(h⁴). Requiere n múltiplo de 3.</p>', examples: [{ name: 'Ejemplo 1', data: { fx: 'exp(x)', a: '0', b: '1', n_mult3: '6' } }, { name: 'Ejemplo 2', data: { fx: 'sin(x)', a: '0', b: '3.14159', n_mult3: '6' } }, { name: 'Ejemplo 3', data: { fx: '1/(1+x^2)', a: '0', b: '1', n_mult3: '6' } }] },
+        { id: 'romb', name: 'Romberg', inputs: ['fx', 'a', 'b', 'n_int'], theory: '<h4>Método de Romberg</h4><p>Extrapolación de Richardson sobre la regla del trapecio. Mejora progresivamente la precisión.</p>', examples: [{ name: 'Ejemplo 1', data: { fx: 'exp(x)', a: '0', b: '1', n_int: '3' } }, { name: 'Ejemplo 2', data: { fx: 'sin(x)', a: '0', b: '3.14159', n_int: '4' } }] }
     ],
     edo: [
-        { id: 'eu', name: 'Euler', inputs: ['fxy', 'x0', 'y0', 'h', 'xf'] },
-        { id: 'rk4', name: 'Runge-Kutta (4to Orden)', inputs: ['fxy', 'x0', 'y0', 'h', 'xf'] }
+        { id: 'eu', name: 'Euler', inputs: ['fxy', 'x0', 'y0', 'h', 'xf'], theory: '<h4>Método de Euler</h4><p>Método más simple para EDO. Error O(h). y_{i+1} = y_i + h·f(x_i,y_i).</p>', examples: [{ name: 'Ejemplo 1', data: { fxy: 'x+y', x0: '0', y0: '1', h: '0.1', xf: '0.5' } }, { name: 'Ejemplo 2', data: { fxy: '-2*x*y', x0: '0', y0: '1', h: '0.1', xf: '1' } }] },
+        { id: 'rk4', name: 'Runge-Kutta (4to Orden)', inputs: ['fxy', 'x0', 'y0', 'h', 'xf'], theory: '<h4>Runge-Kutta 4</h4><p>Cuarto orden, error O(h⁴). El método más popular. Usa 4 evaluaciones por paso (k1,k2,k3,k4).</p>', examples: [{ name: 'Ejemplo 1', data: { fxy: 'x+y', x0: '0', y0: '1', h: '0.1', xf: '0.5' } }, { name: 'Ejemplo 2', data: { fxy: '-2*x*y', x0: '0', y0: '1', h: '0.1', xf: '1' } }] }
     ],
     ajuste: [
-        { id: 'minc', name: 'Mínimos Cuadrados', inputs: ['points', 'degree'] }
+        { id: 'minc', name: 'Mínimos Cuadrados', inputs: ['points', 'degree'], theory: '<h4>Mínimos Cuadrados</h4><p>Minimiza la suma de residuos cuadrados. R² mide la calidad del ajuste (1 = perfecto).</p>', examples: [{ name: 'Ejemplo 1', data: { degree: '1' } }, { name: 'Ejemplo 2', data: { degree: '2' } }] }
     ],
     calc: []
 };
@@ -695,6 +710,36 @@ function updateUI() {
     
     let form = document.getElementById('dynamicForm');
     form.innerHTML = '';
+    
+    // Remove old theory and examples if any
+    document.querySelectorAll('.theory-box').forEach(el => el.remove());
+    document.querySelectorAll('.examples-box').forEach(el => el.remove());
+
+    // Add theory box
+    let theoryBox = document.createElement('div');
+    theoryBox.className = 'theory-box';
+    theoryBox.innerHTML = m.theory || '';
+    form.parentElement.insertBefore(theoryBox, form);
+
+    if(m.examples && m.examples.length > 0) {
+        let exDiv = document.createElement('div');
+        exDiv.className = 'examples-box';
+        exDiv.style.cssText = 'display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;';
+        m.examples.forEach((ex, i) => {
+            let btn = document.createElement('button');
+            btn.className = 'btn-small';
+            btn.style.background = 'var(--secondary)';
+            btn.innerText = 'Ejemplo: ' + ex.name;
+            btn.onclick = () => {
+                Object.entries(ex.data).forEach(([k, v]) => {
+                    let el = document.getElementById(`inp_${k}`);
+                    if(el) el.value = v;
+                });
+            };
+            exDiv.appendChild(btn);
+        });
+        form.appendChild(exDiv);
+    }
 
     m.inputs.forEach(inp => {
         let def = inputDefinitions[inp];
@@ -837,6 +882,7 @@ document.getElementById('solveBtn').addEventListener('click', () => {
     
     let html = '';
     let table = '';
+    let lastRoot = null;
     let isDetailed = document.getElementById('detailedToggle').checked;
     
     const addStep = (title, content) => {
@@ -876,6 +922,7 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 iter++;
             }
             table += '</table>';
+            lastRoot = xi;
             plotFunction(fx, xi);
 
         } else if(currentMethod === 'bis') {
@@ -915,6 +962,7 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 iter++;
             }
             table += '</table>';
+            lastRoot = m;
             plotFunction(fx, m);
         }
         else if (currentMethod === 'gj') {
@@ -994,6 +1042,7 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 iter++;
             }
             table += '</table>';
+            lastRoot = xi;
             plotFunction(fx, xi);
         }
         else if (currentMethod === 'sec') {
@@ -1017,6 +1066,7 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 iter++;
             }
             table += '</table>';
+            lastRoot = xi;
             plotFunction(fx, xi);
         }
         else if (currentMethod === 'rf') {
@@ -1047,6 +1097,7 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 iter++;
             }
             table += '</table>';
+            lastRoot = c;
             plotFunction(fx, c);
         }
         else if (currentMethod === 'jac' || currentMethod === 'gs') {
@@ -1402,6 +1453,17 @@ document.getElementById('solveBtn').addEventListener('click', () => {
             table = `<div class="result-box">Integral ≈ ${R[n][n].toFixed(8)}</div>`;
         }
 
+        // Verification
+        if(['nr','bis','pf','sec','rf'].includes(currentMethod) && lastRoot !== null) {
+            let rootVal = lastRoot;
+            let fRoot = evaluateExpr(getStr('fx'), {x: rootVal});
+            let verifyHtml = `<div class="step-card verification"><h4>Verificación del Resultado</h4>
+                <div class="math-block">Sustituyendo x = ${rootVal.toFixed(8)} en f(x):<br>
+                f(${rootVal.toFixed(8)}) = <span class="result-box">${fRoot.toFixed(10)}</span><br>
+                ${Math.abs(fRoot) < 0.01 ? 'El valor es cercano a 0, confirmando que es una raíz válida.' : 'NOTA: f(raíz) no es exactamente 0 debido a la tolerancia elegida.'}
+                </div></div>`;
+            table += verifyHtml;
+        }
         res.innerHTML = (isDetailed ? html : '') + table;
         saveHistory(savedData);
 
