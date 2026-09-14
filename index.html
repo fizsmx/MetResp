@@ -57,9 +57,13 @@
             background-image: linear-gradient(135deg, var(--bg-color) 0%, #dcdde1 100%);
         }
 
+        [data-theme="light"] header {
+            background: rgba(240, 242, 245, 0.94);
+        }
+
         header {
             padding: 1rem 2rem;
-            background: var(--glass-bg);
+            background: rgba(18, 14, 31, 0.92);
             backdrop-filter: blur(14px);
             border-bottom: 1px solid var(--glass-border);
             display: flex;
@@ -435,6 +439,113 @@
             text-align: center;
         }
         .lin-status { margin-top: 0.6rem; text-align: center; }
+
+        /* ===== Bloque de verificación ===== */
+        .step-card.verification {
+            border-left: 4px solid var(--success);
+            background: rgba(46, 213, 115, 0.06);
+        }
+        .step-card.verification h4 {
+            color: var(--success);
+            margin-bottom: 0.7rem;
+        }
+        .verif-why {
+            border-left: 3px solid var(--secondary);
+            padding-left: 0.8rem;
+            margin-bottom: 0.9rem;
+            line-height: 1.55;
+        }
+        .verif-why b { color: var(--secondary); }
+        .verif-check { line-height: 1.55; }
+        .verif-check b { color: var(--primary); }
+        .verif-final { margin-top: 0.8rem; }
+        .verif-note {
+            margin-top: 0.6rem;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        /* ===== Bloque de gráfica ===== */
+        .chart-block { margin-top: 2rem; }
+        .chart-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+        .chart-tab {
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-color);
+            padding: 0.45rem 0.9rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+        }
+        .chart-tab:hover { border-color: var(--secondary); }
+        .chart-tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            font-weight: 600;
+        }
+        .chart-caption {
+            margin-top: 0.8rem;
+            padding: 0.7rem 0.9rem;
+            background: var(--input-bg);
+            border-left: 3px solid var(--secondary);
+            border-radius: 6px;
+            font-size: 0.86rem;
+            line-height: 1.55;
+        }
+        .chart-caption b { color: var(--secondary); }
+
+        /* ===== Arreglos de formulario ===== */
+        .form-grid { align-items: start; }
+        .form-group { min-width: 0; }
+        .form-group input, .form-group textarea { max-width: 100%; }
+        .examples-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+        .examples-box .examples-label {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-right: 0.2rem;
+        }
+        .example-btn {
+            background: transparent;
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            padding: 0.45rem 0.8rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: var(--font-main);
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+        .example-btn:hover { background: var(--secondary); color: #06131b; }
+        .dynamic-table { width: 100%; min-width: 0; }
+
+        body { overflow-x: hidden; }
+        .step-card { overflow-x: auto; }
+        .step-card table, #resultsContent > table { min-width: 0; }
+        #resultsContent { overflow-x: auto; }
+        .verif-check table { font-size: 0.82rem; }
+        @media (max-width: 720px) {
+            header { padding: 0.8rem 1rem; flex-wrap: wrap; gap: 0.5rem; }
+            .header-controls { flex-wrap: wrap; }
+            .chart-container { height: 300px; }
+        }
+        .dyn-row input { flex: 1 1 0; min-width: 0; width: 100%; }
+        .dyn-row .btn-small { flex: 0 0 auto; }
+        @media (max-width: 640px) {
+            .example-btn { white-space: normal; }
+        }
     </style>
 </head>
 <body>
@@ -494,8 +605,12 @@
             
             <div id="resultsContent"></div>
             
-            <div class="chart-container hidden" id="mainChartWrap">
-                <canvas id="mainChart"></canvas>
+            <div class="chart-block hidden" id="mainChartWrap">
+                <div class="chart-tabs" id="chartTabs"></div>
+                <div class="chart-container">
+                    <canvas id="mainChart"></canvas>
+                </div>
+                <div class="chart-caption" id="chartCaption"></div>
             </div>
         </div>
     </div>
@@ -571,8 +686,8 @@ const methods = {
     ],
     sistemas: [
         { id: 'gj', name: 'Gauss-Jordan', inputs: ['sys_n', 'sys_matrix'], theory: '<h4>Método de Gauss-Jordan</h4><p>Eliminación por filas hasta RREF. Encuentra solución exacta. Complejidad O(n³).</p>', examples: [{ name: 'Ejemplo 1', data: { sys_n: '3', sys_matrix: '2,1,-1,8\n-3,-1,2,-11\n-2,1,2,-3' } }, { name: 'Ejemplo 2', data: { sys_n: '3', sys_matrix: '1,1,1,6\n2,3,1,14\n1,2,3,14' } }] },
-        { id: 'jac', name: 'Jacobi', inputs: ['sys_n', 'sys_matrix', 'tol', 'iter'], theory: '<h4>Método de Jacobi</h4><p>Método iterativo para sistemas. Converge si la matriz es diagonalmente dominante. Usa valores de la iteración anterior.</p>', examples: [{ name: 'Ejemplo 1', data: { sys_n: '3', sys_matrix: '2,1,-1,8\n-3,-1,2,-11\n-2,1,2,-3', tol: '0.01', iter: '25' } }, { name: 'Ejemplo 2', data: { sys_n: '3', sys_matrix: '1,1,1,6\n2,3,1,14\n1,2,3,14', tol: '0.01', iter: '25' } }] },
-        { id: 'gs', name: 'Gauss-Seidel', inputs: ['sys_n', 'sys_matrix', 'tol', 'iter'], theory: '<h4>Método de Gauss-Seidel</h4><p>Similar a Jacobi pero usa valores actualizados inmediatamente. Generalmente converge más rápido.</p>', examples: [{ name: 'Ejemplo 1', data: { sys_n: '3', sys_matrix: '2,1,-1,8\n-3,-1,2,-11\n-2,1,2,-3', tol: '0.01', iter: '25' } }, { name: 'Ejemplo 2', data: { sys_n: '3', sys_matrix: '1,1,1,6\n2,3,1,14\n1,2,3,14', tol: '0.01', iter: '25' } }] },
+        { id: 'jac', name: 'Jacobi', inputs: ['sys_n', 'sys_matrix', 'tol', 'iter'], theory: '<h4>Método de Jacobi</h4><p>Método iterativo para sistemas. Converge si la matriz es diagonalmente dominante. Usa valores de la iteración anterior.</p>', examples: [{ name: 'Dominante (sol. 3, -2.5, 7)', data: { sys_n: '3', sys_matrix: '3,-0.1,-0.2,7.85\n0.1,7,-0.3,-19.3\n0.3,-0.2,10,71.4', tol: '0.01', iter: '25' } }, { name: 'Dominante (sol. 1, 2, -1)', data: { sys_n: '3', sys_matrix: '8,1,1,9\n2,9,-1,21\n1,-2,7,-10', tol: '0.01', iter: '25' } }, { name: 'No dominante (diverge)', data: { sys_n: '3', sys_matrix: '2,1,-1,8\n-3,-1,2,-11\n-2,1,2,-3', tol: '0.01', iter: '25' } }] },
+        { id: 'gs', name: 'Gauss-Seidel', inputs: ['sys_n', 'sys_matrix', 'tol', 'iter'], theory: '<h4>Método de Gauss-Seidel</h4><p>Similar a Jacobi pero usa valores actualizados inmediatamente. Generalmente converge más rápido.</p>', examples: [{ name: 'Dominante (sol. 3, -2.5, 7)', data: { sys_n: '3', sys_matrix: '3,-0.1,-0.2,7.85\n0.1,7,-0.3,-19.3\n0.3,-0.2,10,71.4', tol: '0.01', iter: '25' } }, { name: 'Dominante (sol. 1, 2, -1)', data: { sys_n: '3', sys_matrix: '8,1,1,9\n2,9,-1,21\n1,-2,7,-10', tol: '0.01', iter: '25' } }, { name: 'No dominante (diverge)', data: { sys_n: '3', sys_matrix: '2,1,-1,8\n-3,-1,2,-11\n-2,1,2,-3', tol: '0.01', iter: '25' } }] },
         { id: 'lu', name: 'Factorización LU', inputs: ['sys_n', 'sys_matrix'], theory: '<h4>Factorización LU</h4><p>Descompone A = L·U. Eficiente para resolver múltiples sistemas con la misma matriz.</p>', examples: [{ name: 'Ejemplo 1', data: { sys_n: '3', sys_matrix: '2,1,-1,8\n-3,-1,2,-11\n-2,1,2,-3' } }, { name: 'Ejemplo 2', data: { sys_n: '3', sys_matrix: '1,1,1,6\n2,3,1,14\n1,2,3,14' } }] }
     ],
     interpolacion: [
@@ -615,7 +730,7 @@ const inputDefinitions = {
     n_even: { label: 'n (Par)', type: 'number', placeholder: '4' },
     n_mult3: { label: 'n (Múltiplo de 3)', type: 'number', placeholder: '6' },
     x_eval: { label: 'Evaluar en x =', type: 'number', placeholder: '2.5' },
-    x_eval_opt: { label: 'Evaluar en x = (opcional)', type: 'number', placeholder: 'Dejar vacío para sólo obtener P(x)' },
+    x_eval_opt: { label: 'Evaluar en x = (opcional)', type: 'number', placeholder: 'Opcional' },
     degree: { label: 'Grado del Polinomio', type: 'number', placeholder: '1' },
     sys_n: { label: 'Tamaño (n)', type: 'number', placeholder: '3' },
     sys_matrix: { label: 'Matriz (A|B) o Ecuaciones', isTextarea: true, placeholder: '2, 1, -1, 8\n-3, -1, 2, -11\n-2, 1, 2, -3' },
@@ -793,12 +908,14 @@ function updateUI() {
     if(m.examples && m.examples.length > 0) {
         let exDiv = document.createElement('div');
         exDiv.className = 'examples-box';
-        exDiv.style.cssText = 'display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;';
+        let lbl = document.createElement('span');
+        lbl.className = 'examples-label';
+        lbl.innerText = 'Ejemplos:';
+        exDiv.appendChild(lbl);
         m.examples.forEach((ex, i) => {
             let btn = document.createElement('button');
-            btn.className = 'btn-small';
-            btn.style.background = 'var(--secondary)';
-            btn.innerText = 'Ejemplo: ' + ex.name;
+            btn.className = 'example-btn';
+            btn.innerText = ex.name;
             btn.onclick = () => {
                 if(currentMethod === 'linint') resetLinTable();
                 Object.entries(ex.data).forEach(([k, v]) => {
@@ -815,7 +932,7 @@ function updateUI() {
             };
             exDiv.appendChild(btn);
         });
-        form.appendChild(exDiv);
+        form.parentElement.insertBefore(exDiv, form);
     }
 
     m.inputs.forEach(inp => {
@@ -838,6 +955,9 @@ function updateUI() {
     });
 
     document.getElementById('resultsPanel').classList.add('hidden');
+    chartViews = [];
+    let ct = document.getElementById('chartTabs');
+    if(ct) ct.innerHTML = '';
 }
 
 /* ================= HISTORIAL ================= */
@@ -906,54 +1026,7 @@ document.getElementById('themeToggle').addEventListener('click', () => {
 });
 
 /* ================= GRÁFICOS ================= */
-function plotGraph(type, datasets, labels) {
-    let wrap = document.getElementById('mainChartWrap');
-    wrap.classList.remove('hidden');
-    let ctx = document.getElementById('mainChart').getContext('2d');
-    
-    if(mainChart) mainChart.destroy();
 
-    mainChart = new Chart(ctx, {
-        type: type,
-        data: {
-            labels: labels,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: { type: type==='scatter'?'linear':'category', position: 'bottom' }
-            }
-        }
-    });
-}
-
-function plotFunction(expr, rootX) {
-    let xVals = [];
-    let yVals = [];
-    let range = 5;
-    for(let x = rootX - range; x <= rootX + range; x += 0.1) {
-        xVals.push(x);
-        yVals.push(evaluateExpr(expr, {x: x}));
-    }
-
-    plotGraph('line', [
-        {
-            label: 'f(x)',
-            data: yVals,
-            borderColor: '#00d2ff',
-            tension: 0.1
-        },
-        {
-            label: 'Raíz',
-            data: xVals.map(x => Math.abs(x - rootX) < 0.05 ? 0 : null),
-            borderColor: '#ff4757',
-            pointRadius: 5,
-            showLine: false
-        }
-    ], xVals.map(x => x.toFixed(1)));
-}
 
 /* ================= ENGINE MATEMÁTICO ================= */
 
@@ -963,7 +1036,7 @@ document.getElementById('solveBtn').addEventListener('click', () => {
     let res = document.getElementById('resultsContent');
     res.innerHTML = '';
     document.getElementById('resultsPanel').classList.remove('hidden');
-    document.getElementById('mainChartWrap').classList.add('hidden');
+    setCharts([]);
     
     let html = '';
     let table = '';
@@ -988,6 +1061,7 @@ document.getElementById('solveBtn').addEventListener('click', () => {
 
             table = `<table><tr><th>Iter</th><th>x_i</th><th>f(x_i)</th><th>f'(x_i)</th><th>Error (%)</th></tr>`;
             let ea = 100, xi = x0, iter = 0;
+            let histX = [], histErr = [];
             
             while(ea > tol && iter < maxIter) {
                 let fxi = evaluateExpr(fx, {x: xi});
@@ -1003,12 +1077,15 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 `);
                 table += `<tr><td>${iter}</td><td>${xi.toFixed(6)}</td><td>${fxi.toFixed(6)}</td><td>${fdxi.toFixed(6)}</td><td>${iter>0?ea.toFixed(4):'-'}</td></tr>`;
                 
+                histX.push(xi);
+                if(iter > 0) histErr.push(ea);
                 xi = x_next;
                 iter++;
             }
             table += '</table>';
             lastRoot = xi;
-            plotFunction(fx, xi);
+            histX.push(xi);
+            setCharts(vistasRaiz(fx, xi, histX, histErr, { a: x0 }));
 
         } else if(currentMethod === 'bis') {
             let fx = getStr('fx');
@@ -1027,6 +1104,7 @@ document.getElementById('solveBtn').addEventListener('click', () => {
 
             table = `<table><tr><th>Iter</th><th>a</th><th>b</th><th>m</th><th>f(m)</th><th>Error (%)</th></tr>`;
             let ea = 100, iter = 0, m;
+            let aIni = a, bIni = b, histX = [], histErr = [];
 
             while(ea > tol && iter < maxIter) {
                 m = (a + b) / 2;
@@ -1043,12 +1121,14 @@ document.getElementById('solveBtn').addEventListener('click', () => {
 
                 table += `<tr><td>${iter}</td><td>${a.toFixed(6)}</td><td>${b.toFixed(6)}</td><td>${m.toFixed(6)}</td><td>${fm.toFixed(6)}</td><td>${ea.toFixed(4)}</td></tr>`;
                 
+                histX.push(m);
+                histErr.push(ea);
                 if(fa * fm < 0) b = m; else a = m;
                 iter++;
             }
             table += '</table>';
             lastRoot = m;
-            plotFunction(fx, m);
+            setCharts(vistasRaiz(fx, m, histX, histErr, { a: aIni, b: bIni }));
         }
         else if (currentMethod === 'gj') {
             let n = getVal('sys_n');
@@ -1056,6 +1136,9 @@ document.getElementById('solveBtn').addEventListener('click', () => {
             savedData = {sys_n: n, sys_matrix: raw};
             let rows = raw.trim().split('\n').map(r => r.split(',').map(Number));
             
+            let A_orig = rows.map(r => r.slice(0, n));
+            let b_orig = rows.map(r => r[n]);
+
             addStep('Matriz Inicial', renderMatrix(rows));
             
             for(let i=0; i<n; i++) {
@@ -1077,6 +1160,19 @@ document.getElementById('solveBtn').addEventListener('click', () => {
             table = '<h4>Solución:</h4><ul>';
             for(let i=0; i<n; i++) table += `<li>x${i+1} = ${rows[i][n].toFixed(4)}</li>`;
             table += '</ul>';
+
+            let solGJ = [];
+            for(let i=0; i<n; i++) solGJ.push(rows[i][n]);
+            let resGJ = residualTable(A_orig, b_orig, solGJ);
+            table += buildVerif({
+                fundamento: `Las operaciones por filas transforman la matriz paso a paso, pero un vector x sólo es solución si satisface <b>simultáneamente todas las ecuaciones del sistema original</b>. Por eso se sustituyen los valores obtenidos en cada ecuación tal como fue planteada y se compara con su término independiente: si todos los residuos |Ax &minus; b| son nulos, ninguna operación de fila introdujo error.`,
+                comprobacion: resGJ.html,
+                ok: resGJ.maxRes < 1e-6,
+                okTxt: `Todas las ecuaciones se satisfacen (residuo máximo ${linFmt(resGJ.maxRes, 10)}): la solución es correcta.`,
+                malTxt: `Hay residuos apreciables (máximo ${linFmt(resGJ.maxRes, 10)}); revisa la matriz o la necesidad de pivoteo.`
+            });
+
+            setCharts(vistasSistemaDirecto(A_orig, b_orig, solGJ, 'Gauss-Jordan'));
         }
         else if (currentMethod === 'eu') {
             let fxy = getStr('fxy');
@@ -1107,7 +1203,37 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 iter++;
             }
             table += '</table>';
-            plotGraph('line', [{label:'Euler y(x)', data:yPlot, borderColor:'#8a2be2'}], xPlot.map(v=>v.toFixed(2)));
+            setCharts(vistasEDO(fxy, xPlot, yPlot, 'Euler'));
+
+            let yFinalEu = yPlot[yPlot.length - 1];
+            let xFinalEu = xPlot[xPlot.length - 1];
+            let refEu = rk4Reference(fxy, x0, y0, xFinalEu);
+            let errEu = Math.abs(yFinalEu - refEu);
+            let errRelEu = Math.abs(refEu) > 1e-12 ? errEu / Math.abs(refEu) * 100 : 0;
+            let pendNum = yPlot.length > 1 ? (yPlot[1] - yPlot[0]) / h : NaN;
+            let pendEDO = evaluateExpr(fxy, {x: x0, y: y0});
+            let yMitad = rk4Reference(fxy, x0, y0, xFinalEu, 4000);
+
+            table += buildVerif({
+                fundamento: `La solución numérica de una EDO debe cumplir dos cosas. Primero, <b>respetar la ecuación diferencial</b>: la pendiente con la que avanza cada paso tiene que ser f(x,y) evaluada en el punto de partida, que es exactamente lo que impone la fórmula de Euler. Segundo, <b>converger</b>: como Euler es de primer orden (error global O(h)), su resultado debe acercarse a la solución verdadera cuando el paso disminuye. Por eso se contrasta el valor final con una solución de referencia calculada con Runge-Kutta 4 y un paso miles de veces menor, cuyo error es despreciable frente al de Euler.`,
+                comprobacion: `<b>1) El primer paso respeta la EDO:</b><br>
+                    Pendiente usada: (y<sub>1</sub> &minus; y<sub>0</sub>)/h = ${linFmt(pendNum, 8)}<br>
+                    Pendiente exigida por la ecuación: f(${linFmt(x0)}, ${linFmt(y0)}) = ${linFmt(pendEDO, 8)}<br>
+                    Diferencia: ${linFmt(Math.abs(pendNum - pendEDO), 10)}<br><br>
+                    <b>2) Contraste con la solución de referencia en x = ${linFmt(xFinalEu)}:</b>
+                    <table>
+                        <tr><th>Cálculo</th><th>y(${linFmt(xFinalEu)})</th></tr>
+                        <tr><td>Euler con h = ${linFmt(h)}</td><td>${linFmt(yFinalEu, 8)}</td></tr>
+                        <tr><td>Referencia RK4 (paso muy fino)</td><td>${linFmt(refEu, 8)}</td></tr>
+                        <tr><td>Referencia con el doble de pasos</td><td>${linFmt(yMitad, 8)}</td></tr>
+                        <tr><td>Error absoluto de Euler</td><td>${linFmt(errEu, 8)}</td></tr>
+                        <tr><td>Error relativo</td><td>${linFmt(errRelEu, 6)} %</td></tr>
+                    </table>`,
+                ok: Math.abs(pendNum - pendEDO) < 1e-8,
+                okTxt: `Cada paso reproduce la fórmula de Euler y el resultado sigue la solución de la EDO.`,
+                malTxt: `El avance no coincide con f(x,y); revisa la expresión introducida.`,
+                nota: `La diferencia frente a la referencia (${linFmt(errRelEu, 4)} %) no es un fallo del cálculo: es el error de truncamiento propio de Euler, proporcional a h. Al reducir h a la mitad, ese error debería reducirse aproximadamente a la mitad.`
+            });
         }
         else if (currentMethod === 'pf') {
             let fx = getStr('fx');
@@ -1118,17 +1244,21 @@ document.getElementById('solveBtn').addEventListener('click', () => {
             savedData = {fx, gx, x0, tol, iter: maxIter};
             table = `<table><tr><th>Iter</th><th>x_i</th><th>g(x_i)</th><th>Error (%)</th></tr>`;
             let ea = 100, xi = x0, iter = 0;
+            let histX = [], histErr = [];
             while(ea > tol && iter < maxIter) {
                 let x_next = evaluateExpr(gx, {x: xi});
                 if(iter > 0) ea = Math.abs((x_next - xi) / x_next) * 100;
                 addStep(`Iteración ${iter}`, `1) x_i = ${xi.toFixed(6)}<br>2) g(x_i) = <span class="result-box">${x_next.toFixed(6)}</span><br>3) Error: ${iter>0 ? ea.toFixed(4)+'%' : '-'}`);
                 table += `<tr><td>${iter}</td><td>${xi.toFixed(6)}</td><td>${x_next.toFixed(6)}</td><td>${iter>0?ea.toFixed(4):'-'}</td></tr>`;
+                histX.push(xi);
+                if(iter > 0) histErr.push(ea);
                 xi = x_next;
                 iter++;
             }
             table += '</table>';
             lastRoot = xi;
-            plotFunction(fx, xi);
+            histX.push(xi);
+            setCharts(vistasPuntoFijo(fx, gx, xi, histX, histErr));
         }
         else if (currentMethod === 'sec') {
             let fx = getStr('fx');
@@ -1139,6 +1269,7 @@ document.getElementById('solveBtn').addEventListener('click', () => {
             savedData = {fx, x0, x1, tol, iter: maxIter};
             table = `<table><tr><th>Iter</th><th>x_{i-1}</th><th>x_i</th><th>x_{i+1}</th><th>Error (%)</th></tr>`;
             let ea = 100, xi_prev = x0, xi = x1, iter = 0;
+            let histX = [], histErr = [];
             while(ea > tol && iter < maxIter) {
                 let fxi = evaluateExpr(fx, {x: xi});
                 let fxi_prev = evaluateExpr(fx, {x: xi_prev});
@@ -1146,13 +1277,16 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 ea = Math.abs((x_next - xi) / x_next) * 100;
                 addStep(`Iteración ${iter}`, `f(${xi_prev.toFixed(4)}) = ${fxi_prev.toFixed(4)}, f(${xi.toFixed(4)}) = ${fxi.toFixed(4)}<br>Fórmula: x_{i+1} = <span class="result-box">${x_next.toFixed(6)}</span><br>Error: ${ea.toFixed(4)}%`);
                 table += `<tr><td>${iter}</td><td>${xi_prev.toFixed(6)}</td><td>${xi.toFixed(6)}</td><td>${x_next.toFixed(6)}</td><td>${ea.toFixed(4)}</td></tr>`;
+                histX.push(xi);
+                histErr.push(ea);
                 xi_prev = xi;
                 xi = x_next;
                 iter++;
             }
             table += '</table>';
             lastRoot = xi;
-            plotFunction(fx, xi);
+            histX.push(xi);
+            setCharts(vistasRaiz(fx, xi, histX, histErr, { a: x0, b: x1 }));
         }
         else if (currentMethod === 'rf') {
             let fx = getStr('fx');
@@ -1169,6 +1303,7 @@ document.getElementById('solveBtn').addEventListener('click', () => {
             }
             table = `<table><tr><th>Iter</th><th>a</th><th>b</th><th>c</th><th>f(c)</th><th>Error (%)</th></tr>`;
             let ea = 100, iter = 0, c, c_prev = a;
+            let aIni = a, bIni = b, histX = [], histErr = [];
             while(ea > tol && iter < maxIter) {
                 fa = evaluateExpr(fx, {x: a});
                 fb = evaluateExpr(fx, {x: b});
@@ -1177,13 +1312,16 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 if(iter > 0) ea = Math.abs((c - c_prev) / c) * 100;
                 addStep(`Iteración ${iter}`, `a=${a.toFixed(4)}, b=${b.toFixed(4)}<br>c = <span class="result-box">${c.toFixed(6)}</span><br>f(c) = ${fc.toFixed(6)}<br>Error: ${iter>0 ? ea.toFixed(4)+'%' : '-'}`);
                 table += `<tr><td>${iter}</td><td>${a.toFixed(6)}</td><td>${b.toFixed(6)}</td><td>${c.toFixed(6)}</td><td>${fc.toFixed(6)}</td><td>${iter>0?ea.toFixed(4):'-'}</td></tr>`;
+                histX.push(c);
+                if(iter > 0) histErr.push(ea);
                 if(fa * fc < 0) b = c; else a = c;
                 c_prev = c;
                 iter++;
             }
             table += '</table>';
             lastRoot = c;
-            plotFunction(fx, c);
+            histX.push(c);
+            setCharts(vistasRaiz(fx, c, histX, histErr, { a: aIni, b: bIni }));
         }
         else if (currentMethod === 'jac' || currentMethod === 'gs') {
             let n = getVal('sys_n');
@@ -1196,6 +1334,7 @@ document.getElementById('solveBtn').addEventListener('click', () => {
             let x_new = new Array(n).fill(0);
             table = `<table><tr><th>Iter</th>` + x.map((_,i)=>`<th>x${i+1}</th>`).join('') + `<th>Error (%)</th></tr><tr><td>0</td>` + x.map(v=>`<td>${v}</td>`).join('') + `<td>-</td></tr>`;
             let ea = 100, iter = 0;
+            let histX = [[...x]], histErr = [];
             while(ea > tol && iter < maxIter) {
                 let max_ea = 0;
                 let stepStr = "";
@@ -1212,10 +1351,41 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 ea = max_ea;
                 addStep(`Iteración ${iter+1}`, stepStr + `Error max: ${ea.toFixed(4)}%`);
                 table += `<tr><td>${iter+1}</td>` + x_new.map(v=>`<td>${v.toFixed(6)}</td>`).join('') + `<td>${ea.toFixed(4)}</td></tr>`;
+                histX.push([...x_new]);
+                histErr.push(ea);
                 x = [...x_new];
                 iter++;
             }
             table += '</table>';
+
+            let A_it = rows.map(r => r.slice(0, n));
+            let b_it = rows.map(r => r[n]);
+            let resIt = residualTable(A_it, b_it, x_new);
+
+            let domFilas = '', dominante = true;
+            for(let i=0; i<n; i++) {
+                let diag = Math.abs(A_it[i][i]);
+                let resto = 0;
+                for(let j=0; j<n; j++) if(j !== i) resto += Math.abs(A_it[i][j]);
+                if(diag < resto) dominante = false;
+                domFilas += `<tr><td>${i+1}</td><td>${linFmt(diag, 4)}</td><td>${linFmt(resto, 4)}</td><td>${diag >= resto ? 'Cumple' : 'No cumple'}</td></tr>`;
+            }
+
+            table += buildVerif({
+                fundamento: `Un método iterativo se detiene cuando dos aproximaciones consecutivas difieren menos que la tolerancia, pero eso sólo indica que la sucesión se estabilizó: <b>no demuestra que el valor alcanzado resuelva el sistema</b>. La prueba definitiva es sustituir la última aproximación en las ecuaciones originales y medir los residuos. Se revisa además la dominancia diagonal (|a<sub>ii</sub>| &ge; &Sigma;|a<sub>ij</sub>|), condición suficiente que garantiza la convergencia del método.`,
+                comprobacion: resIt.html +
+                    `<br><b>Criterio de convergencia (dominancia diagonal):</b>
+                    <table><tr><th>Fila</th><th>|a<sub>ii</sub>|</th><th>&Sigma;|a<sub>ij</sub>| (j&ne;i)</th><th>Condición</th></tr>${domFilas}</table>
+                    ${dominante ? 'La matriz es diagonalmente dominante: la convergencia estaba garantizada de antemano.' : 'La matriz no es diagonalmente dominante: el método puede converger igualmente, pero no está garantizado.'}
+                    <br><br>Iteraciones realizadas: ${iter} &nbsp;|&nbsp; error final entre iteraciones: ${linFmt(ea, 6)} %`,
+                ok: resIt.maxRes < 1e-3,
+                okTxt: `La solución satisface el sistema (residuo máximo ${linFmt(resIt.maxRes, 8)}).`,
+                malTxt: `Residuo máximo ${linFmt(resIt.maxRes, 8)}: la aproximación aún está lejos; reduce la tolerancia o aumenta las iteraciones.`,
+                nota: `Al ser un método iterativo el residuo depende de la tolerancia pedida: más iteraciones lo acercan más a cero.`
+            });
+
+            setCharts(vistasSistemaIterativo(histX, histErr, currentMethod === 'gs' ? 'Gauss-Seidel' : 'Jacobi')
+                .concat(vistasSistemaDirecto(A_it, b_it, x_new, currentMethod === 'gs' ? 'Gauss-Seidel' : 'Jacobi').slice(-1)));
         }
         else if (currentMethod === 'lag') {
             let pts = getVal('points').filter(p => !isNaN(p.x) && !isNaN(p.y));
@@ -1252,10 +1422,36 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 }
                 plotX.push(px); plotY.push(p_res);
             }
-            plotGraph('line', [
-                {label:'Polinomio Lagrange', data:plotY, borderColor:'#8a2be2', tension:0.4},
-                {label:'Puntos', data:pts.map(p=>p.y), type:'scatter', backgroundColor:'#ff4757'}
-            ], plotX.map(x=>x.toFixed(2)));
+            setCharts(vistasInterpolacion(px => lagrangeAt(pts, px), pts, x_eval, result,
+                'Polinomio de Lagrange de grado ' + (n - 1),
+                `Los puntos morados son los datos y la curva azul es el polinomio de Lagrange, que <b>pasa exactamente por todos ellos</b>. La línea punteada muestra cómo se lee el valor pedido: se entra por x = ${linFmt(x_eval)} y se sale por P(x) = ${linFmt(result, 6)}.`));
+
+            let filasLag = '', maxErrLag = 0, sumaL = 0;
+            pts.forEach((pt, i) => {
+                let pv = lagrangeAt(pts, pt.x);
+                let e = Math.abs(pv - pt.y);
+                if(e > maxErrLag) maxErrLag = e;
+                filasLag += `<tr><td>${i}</td><td>${linFmt(pt.x)}</td><td>${linFmt(pt.y)}</td><td>${linFmt(pv, 8)}</td><td>${linFmt(e, 10)}</td></tr>`;
+            });
+            let detalleL = '';
+            for(let i = 0; i < n; i++) {
+                let L = 1;
+                for(let j = 0; j < n; j++) if(j !== i) L *= (x_eval - pts[j].x) / (pts[i].x - pts[j].x);
+                sumaL += L;
+                detalleL += `L<sub>${i}</sub>(${linFmt(x_eval)}) = ${linFmt(L, 6)}<br>`;
+            }
+
+            table += buildVerif({
+                fundamento: `El polinomio de Lagrange se construye para <b>pasar exactamente por cada punto dado</b>: por eso la prueba es evaluarlo en las abscisas de los datos y comprobar que devuelve sus ordenadas. Se añade una segunda propiedad que caracteriza a la base de Lagrange: la suma de todos los polinomios base vale 1 en cualquier x (&Sigma;L<sub>i</sub>(x) = 1), lo que confirma que los pesos del promedio están bien calculados.`,
+                comprobacion: `<b>1) El polinomio reproduce cada punto:</b>
+                    <table><tr><th>i</th><th>x<sub>i</sub></th><th>y<sub>i</sub></th><th>P(x<sub>i</sub>)</th><th>|Error|</th></tr>${filasLag}</table>
+                    <br><b>2) Suma de los polinomios base en x = ${linFmt(x_eval)}:</b><br>${detalleL}
+                    &Sigma;L<sub>i</sub> = ${linFmt(sumaL, 10)} (debe ser 1)`,
+                ok: maxErrLag < 1e-8 && Math.abs(sumaL - 1) < 1e-8,
+                okTxt: `P(x) pasa por todos los puntos y &Sigma;L<sub>i</sub> = 1: la interpolación es correcta.`,
+                malTxt: `La interpolación no reproduce los datos; revisa que las abscisas sean distintas.`,
+                nota: `El valor P(${linFmt(x_eval)}) = ${linFmt(result, 6)} es una estimación entre los datos: su exactitud depende de cuán bien represente el polinomio al fenómeno real, no del cálculo en sí.`
+            });
         }
         else if (currentMethod === 'new') {
             const f = linFmt;
@@ -1399,13 +1595,18 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 if(err > maxErr) maxErr = err;
                 verifRows += `<tr><td>${i}</td><td>${f(p.x)}</td><td>${f(p.y)}</td><td>${f(pv, 8)}</td><td>${f(err, 10)}</td></tr>`;
             });
-            table += `<div class="step-card verification"><h4>Verificación del resultado</h4>
-                El polinomio interpolante debe reproducir exactamente cada punto dado:
-                <table><tr><th>j</th><th>x<sub>j</sub></th><th>f(x<sub>j</sub>)</th><th>P(x<sub>j</sub>)</th><th>|Error|</th></tr>${verifRows}</table>
-                ${maxErr < 1e-8 ? '<br><span class="badge success">P(x) pasa por todos los puntos: la interpolación es correcta.</span>' : '<br><span class="badge danger">Se detectaron diferencias; revisa los datos ingresados.</span>'}
-                </div>`;
+            table += buildVerif({
+                fundamento: `El polinomio de Newton se construye imponiendo que <b>pase exactamente por los n puntos dados</b>; ésa es la condición que define sus coeficientes. Por tanto, evaluarlo en cada abscisa x<sub>j</sub> y comparar con f(x<sub>j</sub>) comprueba de una vez la tabla de diferencias divididas, los coeficientes a<sub>j</sub> y la expansión algebraica: si un solo paso tuviera un error, el polinomio dejaría de pasar por alguno de los puntos.`,
+                comprobacion: `<table><tr><th>j</th><th>x<sub>j</sub></th><th>f(x<sub>j</sub>)</th><th>P(x<sub>j</sub>)</th><th>|Error|</th></tr>${verifRows}</table>`,
+                ok: maxErr < 1e-8,
+                okTxt: `P(x) pasa por todos los puntos: el polinomio es el interpolante correcto.`,
+                malTxt: `Se detectaron diferencias; revisa los datos ingresados.`,
+                nota: `Con n puntos el interpolante de grado n&minus;1 es único: el polinomio obtenido por Newton y el de Lagrange son el mismo, sólo escrito de otra forma.`
+            });
 
-            plotPolynomial(expandido, pts, x_eval, yEval, 'P(x) de Newton');
+            setCharts(vistasInterpolacion(px => polyEval(expandido, px), pts, x_eval, yEval,
+                'Polinomio de Newton de grado ' + (n - 1),
+                `La curva azul es P(x) = ${polyToString(expandido)}. Debe <b>pasar por cada punto morado</b>: ésa es la comprobación visual de la tabla de diferencias divididas.${x_eval !== null && !isNaN(x_eval) ? ` El rombo verde es el valor evaluado P(${linFmt(x_eval)}) = ${linFmt(yEval, 6)}.` : ''}`));
         }
         else if (currentMethod === 'trap' || currentMethod === 's13' || currentMethod === 's38') {
             let fx = getStr('fx');
@@ -1436,6 +1637,36 @@ document.getElementById('solveBtn').addEventListener('click', () => {
             let finalRes = sum * (currentMethod === 'trap' ? h/2 : currentMethod === 's13' ? h/3 : 3*h/8);
             addStep('Evaluación', stepStr);
             table = `<div class="result-box">Integral = ${finalRes.toFixed(6)}</div>`;
+
+            let ref = refIntegral(fx, a, b);
+            let errAbs = Math.abs(finalRes - ref);
+            let errRel = Math.abs(ref) > 1e-12 ? errAbs / Math.abs(ref) * 100 : 0;
+            let paso = currentMethod === 's38' ? 2 : 2;
+            let res2n = integrateRule(currentMethod, fx, a, b, n * paso);
+            let dif2n = Math.abs(res2n - finalRes);
+            let ordenTxt = currentMethod === 'trap' ? 'O(h²): al duplicar n el error debería reducirse ~4 veces'
+                          : 'O(h⁴): al duplicar n el error debería reducirse ~16 veces';
+            let nombreRegla = currentMethod === 'trap' ? 'trapecio' : currentMethod === 's13' ? 'Simpson 1/3' : 'Simpson 3/8';
+
+            table += buildVerif({
+                fundamento: `Una integral aproximada no puede comprobarse sustituyendo en una ecuación, porque su valor exacto es justamente lo que se desconoce. Lo que sí puede hacerse es <b>refinar</b>: toda regla de integración converge al valor exacto cuando el paso h tiende a cero. Por eso se compara el resultado con el de la misma función calculado con un mallado muy fino (Simpson con 2000 subintervalos, error despreciable) y se repite la propia regla con el doble de intervalos: si ambas cifras coinciden con la obtenida, el cálculo es consistente y el error es sólo el de truncamiento propio del método (${ordenTxt}).`,
+                comprobacion: `Regla aplicada: ${nombreRegla} con n = ${n} &nbsp;(h = ${linFmt(h, 6)})<br><br>
+                    <table>
+                        <tr><th>Cálculo</th><th>Valor</th></tr>
+                        <tr><td>Resultado obtenido (n = ${n})</td><td>${linFmt(finalRes, 8)}</td></tr>
+                        <tr><td>Misma regla con n = ${n * paso}</td><td>${linFmt(res2n, 8)}</td></tr>
+                        <tr><td>Referencia refinada (Simpson, n = 2000)</td><td>${linFmt(ref, 8)}</td></tr>
+                        <tr><td>Error absoluto frente a la referencia</td><td>${linFmt(errAbs, 8)}</td></tr>
+                        <tr><td>Error relativo</td><td>${linFmt(errRel, 6)} %</td></tr>
+                        <tr><td>Cambio al duplicar n</td><td>${linFmt(dif2n, 8)}</td></tr>
+                    </table>`,
+                ok: errRel < 1,
+                okTxt: `El resultado coincide con la integral refinada (error ${linFmt(errRel, 4)} %): la aproximación es válida.`,
+                malTxt: `La diferencia con la integral refinada es del ${linFmt(errRel, 4)} %: aumenta n para reducir el error de truncamiento.`,
+                nota: `Aumentar n reduce el error hasta el límite de la precisión de la máquina; con funciones muy oscilantes conviene subdividir el intervalo.`
+            });
+
+            setCharts(vistasIntegracion(fx, a, b, n, currentMethod, finalRes));
         }
         else if (currentMethod === 'rk4') {
             let fxy = getStr('fxy'), x0 = getVal('x0'), y0 = getVal('y0'), h = getVal('h'), xf = getVal('xf');
@@ -1454,7 +1685,40 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 y += (k1 + 2*k2 + 2*k3 + k4) / 6; x += h; iter++;
             }
             table += '</table>';
-            plotGraph('line', [{label:'RK4 y(x)', data:yPlot, borderColor:'#ff4757'}], xPlot.map(v=>v.toFixed(2)));
+            setCharts(vistasEDO(fxy, xPlot, yPlot, 'Runge-Kutta 4'));
+
+            let yFinalRK = yPlot[yPlot.length - 1];
+            let xFinalRK = xPlot[xPlot.length - 1];
+            let refRK = rk4Reference(fxy, x0, y0, xFinalRK);
+            let errRK = Math.abs(yFinalRK - refRK);
+            let errRelRK = Math.abs(refRK) > 1e-12 ? errRK / Math.abs(refRK) * 100 : 0;
+            let rkMitad = (() => {
+                let hh = h / 2, xx = x0, yy = y0;
+                while(xx < xFinalRK - hh/2) {
+                    let k1 = hh * evaluateExpr(fxy, {x: xx, y: yy});
+                    let k2 = hh * evaluateExpr(fxy, {x: xx + hh/2, y: yy + k1/2});
+                    let k3 = hh * evaluateExpr(fxy, {x: xx + hh/2, y: yy + k2/2});
+                    let k4 = hh * evaluateExpr(fxy, {x: xx + hh, y: yy + k3});
+                    yy += (k1 + 2*k2 + 2*k3 + k4)/6; xx += hh;
+                }
+                return yy;
+            })();
+
+            table += buildVerif({
+                fundamento: `RK4 estima cada paso promediando cuatro pendientes (k<sub>1</sub>..k<sub>4</sub>) y tiene error global O(h⁴): al reducir el paso a la mitad el error debe caer unas 16 veces. Esa propiedad permite verificarlo <b>sin conocer la solución analítica</b>: se repite el cálculo con la mitad del paso y con un paso muy fino; si las tres cifras coinciden en sus primeros decimales, el método ya convergió y el resultado es fiable. Es el mismo razonamiento que sustenta el control de paso en los solucionadores profesionales.`,
+                comprobacion: `<table>
+                        <tr><th>Cálculo</th><th>y(${linFmt(xFinalRK)})</th></tr>
+                        <tr><td>RK4 con h = ${linFmt(h)}</td><td>${linFmt(yFinalRK, 10)}</td></tr>
+                        <tr><td>RK4 con h/2 = ${linFmt(h/2)}</td><td>${linFmt(rkMitad, 10)}</td></tr>
+                        <tr><td>Referencia RK4 (paso muy fino)</td><td>${linFmt(refRK, 10)}</td></tr>
+                        <tr><td>Error absoluto</td><td>${linFmt(errRK, 10)}</td></tr>
+                        <tr><td>Error relativo</td><td>${linFmt(errRelRK, 8)} %</td></tr>
+                    </table>`,
+                ok: errRelRK < 0.1,
+                okTxt: `Los tres cálculos coinciden: la solución numérica ha convergido.`,
+                malTxt: `Diferencia del ${linFmt(errRelRK, 6)} % frente a la referencia: reduce el paso h.`,
+                nota: `Compara con Euler sobre el mismo problema: con idéntico h, RK4 alcanza varios órdenes de magnitud más de precisión.`
+            });
         }
         else if (currentMethod === 'minc') {
             let pts = getVal('points');
@@ -1525,10 +1789,34 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 fitX.push(x.toFixed(2));
                 fitY.push(coeffs.reduce((sum, c, i) => sum + c * Math.pow(x, i), 0));
             }
-            plotGraph('line', [
-                {label:'Ajuste', data:fitY, borderColor:'#00d2ff'},
-                {label:'Datos', data:pts.map(p=>p.y), type:'scatter', backgroundColor:'#ff4757'}
-            ], fitX);
+            setCharts(vistasAjuste(coeffs, pts, r2));
+
+            // Condición de ortogonalidad de los residuos (ecuaciones normales)
+            let residuos = pts.map(pt => pt.y - coeffs.reduce((sum, c, i) => sum + c * Math.pow(pt.x, i), 0));
+            let ortoFilas = '', maxOrto = 0;
+            for(let k = 0; k <= degree; k++) {
+                let sk = pts.reduce((acc, pt, i) => acc + residuos[i] * Math.pow(pt.x, k), 0);
+                if(Math.abs(sk) > maxOrto) maxOrto = Math.abs(sk);
+                ortoFilas += `<tr><td>&Sigma; e<sub>i</sub>·x<sub>i</sub><sup>${k}</sup></td><td>${linFmt(sk, 10)}</td><td>0</td></tr>`;
+            }
+            let filasRes = '';
+            pts.forEach((pt, i) => {
+                let yp = coeffs.reduce((sum, c, j) => sum + c * Math.pow(pt.x, j), 0);
+                filasRes += `<tr><td>${i + 1}</td><td>${linFmt(pt.x)}</td><td>${linFmt(pt.y)}</td><td>${linFmt(yp, 6)}</td><td>${linFmt(residuos[i], 6)}</td><td>${linFmt(residuos[i] * residuos[i], 8)}</td></tr>`;
+            });
+
+            table += buildVerif({
+                fundamento: `A diferencia de la interpolación, este ajuste <b>no pasa por los puntos</b>: busca la curva que minimiza la suma de los residuos al cuadrado. Por eso no puede verificarse comprobando que P(x<sub>i</sub>) = y<sub>i</sub>. La condición que caracteriza al mínimo es que la derivada de esa suma respecto a cada coeficiente sea nula, lo que equivale a que los residuos sean <b>ortogonales</b> a cada potencia de x: &Sigma;e<sub>i</sub> = 0, &Sigma;e<sub>i</sub>x<sub>i</sub> = 0, ... Si esas sumas dan cero, los coeficientes resuelven correctamente las ecuaciones normales y ninguna otra curva del mismo grado tiene menor error.`,
+                comprobacion: `<b>1) Condición de mínimo (ortogonalidad de los residuos):</b>
+                    <table><tr><th>Suma</th><th>Valor obtenido</th><th>Valor exigido</th></tr>${ortoFilas}</table>
+                    <br><b>2) Residuos punto a punto:</b>
+                    <table><tr><th>i</th><th>x<sub>i</sub></th><th>y<sub>i</sub></th><th>P(x<sub>i</sub>)</th><th>e<sub>i</sub></th><th>e<sub>i</sub>²</th></tr>${filasRes}</table>
+                    <br>SS<sub>res</sub> = &Sigma;e<sub>i</sub>² = ${linFmt(ssRes, 8)} &nbsp;|&nbsp; SS<sub>tot</sub> = ${linFmt(ssTot, 8)} &nbsp;|&nbsp; R² = 1 &minus; SS<sub>res</sub>/SS<sub>tot</sub> = ${linFmt(r2, 8)}`,
+                ok: maxOrto < 1e-6,
+                okTxt: `Los residuos son ortogonales al modelo: los coeficientes son los de mínimo error cuadrático.`,
+                malTxt: `Las condiciones de mínimo no se cumplen (desvío máximo ${linFmt(maxOrto, 10)}); revisa los datos o el grado elegido.`,
+                nota: `R² = ${linFmt(r2, 6)} indica qué proporción de la variación de los datos explica el modelo; mide la calidad del ajuste, no la corrección del cálculo (ambas cosas son distintas).`
+            });
         }
         else if (currentMethod === 'lu') {
             let n = getVal('sys_n');
@@ -1577,6 +1865,42 @@ document.getElementById('solveBtn').addEventListener('click', () => {
             table = '<h4>Solución:</h4><ul>';
             for(let i = 0; i < n; i++) table += `<li>x${i+1} = ${x_sol[i].toFixed(6)}</li>`;
             table += '</ul>';
+
+            // 1) L·U debe reproducir A
+            let LU = Array.from({length:n}, () => new Array(n).fill(0));
+            let maxLU = 0;
+            for(let i = 0; i < n; i++) {
+                for(let j = 0; j < n; j++) {
+                    let acc = 0;
+                    for(let k = 0; k < n; k++) acc += L[i][k] * U[k][j];
+                    LU[i][j] = acc;
+                    let d = Math.abs(acc - A[i][j]);
+                    if(d > maxLU) maxLU = d;
+                }
+            }
+            let filasLU = '';
+            for(let i = 0; i < n; i++) {
+                let fila = [], filaA = [];
+                for(let j = 0; j < n; j++) { fila.push(linFmt(LU[i][j], 6)); filaA.push(linFmt(A[i][j], 6)); }
+                filasLU += `<tr><td>${i+1}</td><td>${fila.join(' &nbsp; ')}</td><td>${filaA.join(' &nbsp; ')}</td></tr>`;
+            }
+            // 2) A·x debe dar b
+            let resLU = residualTable(A, b_vec, x_sol);
+
+            table += buildVerif({
+                fundamento: `La factorización se apoya en la identidad <b>A = L·U</b>: si el producto de las dos matrices obtenidas no devuelve la matriz original, la descomposición está mal y todo lo que sigue carece de sentido. Comprobado eso, resolver Ly = b y luego Ux = y equivale a resolver Ax = b, así que la segunda prueba es sustituir la solución en el sistema original. Las dos comprobaciones cubren las dos mitades del método: la descomposición y las sustituciones.`,
+                comprobacion: `<b>1) El producto L·U reproduce A:</b>
+                    <table><tr><th>Fila</th><th>L·U</th><th>A original</th></tr>${filasLU}</table>
+                    Diferencia máxima: ${linFmt(maxLU, 10)}
+                    <br><br><b>2) La solución satisface el sistema original:</b>
+                    ${resLU.html}`,
+                ok: maxLU < 1e-6 && resLU.maxRes < 1e-6,
+                okTxt: `L·U = A y A·x = b: la factorización y la solución son correctas.`,
+                malTxt: `Alguna comprobación falla (L·U difiere en ${linFmt(maxLU, 8)}, residuo ${linFmt(resLU.maxRes, 8)}); puede requerirse pivoteo.`,
+                nota: `Con A ya factorizada, resolver el sistema para otro vector b sólo exige repetir las dos sustituciones: ahí está la ventaja de LU frente a Gauss-Jordan.`
+            });
+
+            setCharts(vistasSistemaDirecto(A, b_vec, x_sol, 'Factorización LU'));
         }
         else if (currentMethod === 'spline') {
             let pts = getVal('points').filter(p => !isNaN(p.x) && !isNaN(p.y));
@@ -1628,6 +1952,76 @@ document.getElementById('solveBtn').addEventListener('click', () => {
                 }
             }
             table = `<div class="result-box">S(${x_eval_val}) = ${isNaN(result) ? 'Fuera de rango' : result.toFixed(6)}</div>`;
+
+            const S  = (i, x) => { let t = x - pts[i].x; return a_s[i] + b_s[i]*t + c[i]*t*t + d[i]*t*t*t; };
+            const S1 = (i, x) => { let t = x - pts[i].x; return b_s[i] + 2*c[i]*t + 3*d[i]*t*t; };
+            const S2 = (i, x) => { let t = x - pts[i].x; return 2*c[i] + 6*d[i]*t; };
+
+            // Pasa por los nodos
+            let filasNodos = '', maxNodo = 0;
+            for(let i = 0; i < n; i++) {
+                let v = S(i, pts[i].x);
+                let e = Math.abs(v - pts[i].y);
+                if(e > maxNodo) maxNodo = e;
+                filasNodos += `<tr><td>${i}</td><td>${linFmt(pts[i].x)}</td><td>${linFmt(pts[i].y)}</td><td>${linFmt(v, 8)}</td><td>${linFmt(e, 10)}</td></tr>`;
+            }
+            let vFin = S(n-1, pts[n].x);
+            let eFin = Math.abs(vFin - pts[n].y);
+            if(eFin > maxNodo) maxNodo = eFin;
+            filasNodos += `<tr><td>${n}</td><td>${linFmt(pts[n].x)}</td><td>${linFmt(pts[n].y)}</td><td>${linFmt(vFin, 8)}</td><td>${linFmt(eFin, 10)}</td></tr>`;
+
+            // Continuidad C0, C1 y C2 en los nodos interiores
+            let filasCont = '', maxCont = 0;
+            for(let i = 1; i < n; i++) {
+                let xi = pts[i].x;
+                let d0 = Math.abs(S(i-1, xi) - S(i, xi));
+                let d1 = Math.abs(S1(i-1, xi) - S1(i, xi));
+                let d2 = Math.abs(S2(i-1, xi) - S2(i, xi));
+                maxCont = Math.max(maxCont, d0, d1, d2);
+                filasCont += `<tr><td>${linFmt(xi)}</td><td>${linFmt(d0, 10)}</td><td>${linFmt(d1, 10)}</td><td>${linFmt(d2, 10)}</td></tr>`;
+            }
+            if(filasCont === '') filasCont = `<tr><td colspan="4">Sólo hay un tramo: no existen nodos interiores.</td></tr>`;
+
+            // Condiciones naturales
+            let s2ini = S2(0, pts[0].x);
+            let s2fin = S2(n-1, pts[n].x);
+            let natural = Math.abs(s2ini) < 1e-8 && Math.abs(s2fin) < 1e-8;
+
+            table += buildVerif({
+                fundamento: `Un spline cúbico natural se define por cuatro condiciones, y todas deben comprobarse: cada tramo <b>pasa por sus nodos</b>, y en los nodos interiores coinciden el <b>valor</b> (continuidad C⁰), la <b>primera derivada</b> (C¹, sin picos) y la <b>segunda derivada</b> (C², sin cambios bruscos de curvatura); además, por ser natural, la segunda derivada se anula en los extremos. Si alguna de estas igualdades fallara, la curva mostraría un salto o un quiebre justo en el punto de unión, y el sistema tridiagonal estaría mal resuelto.`,
+                comprobacion: `<b>1) Cada tramo pasa por sus nodos:</b>
+                    <table><tr><th>i</th><th>x<sub>i</sub></th><th>y<sub>i</sub></th><th>S(x<sub>i</sub>)</th><th>|Error|</th></tr>${filasNodos}</table>
+                    <br><b>2) Continuidad en los nodos interiores (deben ser 0):</b>
+                    <table><tr><th>Nodo</th><th>|&Delta;S| (C⁰)</th><th>|&Delta;S'| (C¹)</th><th>|&Delta;S''| (C²)</th></tr>${filasCont}</table>
+                    <br><b>3) Condiciones de spline natural:</b><br>
+                    S''(${linFmt(pts[0].x)}) = ${linFmt(s2ini, 10)} &nbsp;&nbsp; S''(${linFmt(pts[n].x)}) = ${linFmt(s2fin, 10)} &nbsp; (ambas deben ser 0)`,
+                ok: maxNodo < 1e-8 && maxCont < 1e-8 && natural,
+                okTxt: `Pasa por todos los nodos, es continuo hasta la segunda derivada y cumple las condiciones naturales.`,
+                malTxt: `Alguna condición del spline no se cumple; revisa los puntos introducidos.`,
+                nota: `Esta suavidad C² es la razón de usar splines en lugar de un único polinomio de grado alto: se evita el fenómeno de Runge sin perder continuidad.`
+            });
+
+            const splineAt = px => {
+                let i = 0;
+                while(i < n - 1 && px > pts[i+1].x) i++;
+                let t = px - pts[i].x;
+                return a_s[i] + b_s[i]*t + c[i]*t*t + d[i]*t*t*t;
+            };
+            let vistasSpline = vistasInterpolacion(splineAt, pts, isNaN(result) ? null : x_eval_val, result,
+                'Spline cúbico natural (' + n + ' tramo' + (n > 1 ? 's' : '') + ')',
+                `Cada tramo entre dos nodos es un polinomio cúbico distinto, pero se unen con la misma pendiente y curvatura: por eso <b>la curva no muestra quiebres en los nodos</b>. Los puntos morados son los datos que unen los tramos.`);
+            let ds2 = [];
+            for(let i = 0; i < n; i++) {
+                ds2.push(lineDS('S\u2033(x) tramo ' + i,
+                    sampleFn(px => 2*c[i] + 6*d[i]*(px - pts[i].x), pts[i].x, pts[i+1].x, 30),
+                    i % 2 ? CHART_COLORS.curva2 : CHART_COLORS.curva, { tension: 0 }));
+            }
+            vistasSpline.push({
+                name: 'Curvatura S\u2033(x)',
+                cfg: chartCfg({ title: 'Segunda derivada: continua y nula en los extremos', xLabel: 'x', yLabel: 'S\u2033(x)', datasets: ds2 }),
+                caption: `La segunda derivada mide la curvatura. En un spline natural <b>es continua al pasar de un tramo al siguiente y vale cero en los extremos</b>: por eso los trozos de recta se encuentran sin saltos y la curva termina sin curvarse.`
+            });
+            setCharts(vistasSpline);
         }
         else if (currentMethod === 'romb') {
             let fx = getStr('fx');
@@ -1665,18 +2059,82 @@ document.getElementById('solveBtn').addEventListener('click', () => {
             tableHtml += '</table>';
             addStep('Tabla de Romberg', tableHtml);
             table = `<div class="result-box">Integral ≈ ${R[n][n].toFixed(8)}</div>`;
+
+            let refR = refIntegral(fx, a, b);
+            let errR = Math.abs(R[n][n] - refR);
+            let errRelR = Math.abs(refR) > 1e-12 ? errR / Math.abs(refR) * 100 : 0;
+            let difDiag = n >= 1 ? Math.abs(R[n][n] - R[n-1][n-1]) : NaN;
+            let filasDiag = '';
+            for(let i = 0; i <= n; i++) {
+                let d = i === 0 ? '—' : linFmt(Math.abs(R[i][i] - R[i-1][i-1]), 10);
+                filasDiag += `<tr><td>R[${i+1}][${i+1}]</td><td>${linFmt(R[i][i], 10)}</td><td>${d}</td></tr>`;
+            }
+
+            table += buildVerif({
+                fundamento: `Romberg aplica la extrapolación de Richardson sobre la regla del trapecio: cada columna cancela el siguiente término del error, de modo que la <b>diagonal de la tabla debe converger</b> rápidamente al valor exacto. Por eso la verificación observa dos cosas: que las diferencias entre elementos consecutivos de la diagonal tiendan a cero (convergencia interna del método) y que el valor final coincida con una integral calculada aparte con un mallado muy fino (contraste externo e independiente).`,
+                comprobacion: `<b>1) Convergencia de la diagonal:</b>
+                    <table><tr><th>Elemento</th><th>Valor</th><th>|Diferencia con el anterior|</th></tr>${filasDiag}</table>
+                    <br><b>2) Contraste con una integral refinada:</b><br>
+                    Referencia (Simpson, n = 2000) = ${linFmt(refR, 10)}<br>
+                    Resultado de Romberg = ${linFmt(R[n][n], 10)}<br>
+                    Error absoluto = ${linFmt(errR, 10)} &nbsp;|&nbsp; Error relativo = ${linFmt(errRelR, 8)} %`,
+                ok: errRelR < 0.1,
+                okTxt: `La diagonal converge y el valor coincide con la referencia: la integral es correcta.`,
+                malTxt: `El valor difiere de la referencia en ${linFmt(errRelR, 6)} %: aumenta el número de niveles.`,
+                nota: `Diferencia entre los dos últimos elementos de la diagonal: ${isNaN(difDiag) ? '—' : linFmt(difDiag, 10)}. Cuanto menor es, más estable es el resultado.`
+            });
+
+            let diagDatos = [];
+            for(let i = 0; i <= n; i++) diagDatos.push({ x: i + 1, y: R[i][i] });
+            let trapDatos = [];
+            for(let i = 0; i <= n; i++) trapDatos.push({ x: i + 1, y: R[i][0] });
+            let vistasRomb = [{
+                name: 'Convergencia de la tabla',
+                cfg: chartCfg({
+                    title: 'La diagonal converge mucho antes que la columna del trapecio',
+                    xLabel: 'Nivel de la tabla', yLabel: 'Valor de la integral',
+                    datasets: [
+                        lineDS('Columna 1 (sólo trapecio)', trapDatos, CHART_COLORS.aviso, { pointRadius: 5, tension: 0 }),
+                        lineDS('Diagonal (Romberg)', diagDatos, CHART_COLORS.curva, { pointRadius: 5, tension: 0 }),
+                        lineDS('Valor de referencia', [{ x: 1, y: refR }, { x: n + 1, y: refR }], CHART_COLORS.guia, { borderDash: [6, 4], borderWidth: 1, tension: 0 })
+                    ]
+                }),
+                caption: `La línea roja es la regla del trapecio al ir refinando el paso; la azul es la diagonal de Romberg. <b>La extrapolación de Richardson alcanza el valor de referencia (línea punteada) con muchos menos niveles</b>: ahí está la ganancia del método.`
+            }];
+            setCharts(vistasRomb.concat(vistasIntegracion(fx, a, b, Math.pow(2, n), 'trap', R[n][n]).slice(0, 1)));
         }
 
-        // Verification
+        // Verificación de los métodos de raíces
         if(['nr','bis','pf','sec','rf'].includes(currentMethod) && lastRoot !== null) {
-            let rootVal = lastRoot;
-            let fRoot = evaluateExpr(getStr('fx'), {x: rootVal});
-            let verifyHtml = `<div class="step-card verification"><h4>Verificación del Resultado</h4>
-                <div class="math-block">Sustituyendo x = ${rootVal.toFixed(8)} en f(x):<br>
-                f(${rootVal.toFixed(8)}) = <span class="result-box">${fRoot.toFixed(10)}</span><br>
-                ${Math.abs(fRoot) < 0.01 ? 'El valor es cercano a 0, confirmando que es una raíz válida.' : 'NOTA: f(raíz) no es exactamente 0 debido a la tolerancia elegida.'}
-                </div></div>`;
-            table += verifyHtml;
+            let fxStr = getStr('fx');
+            let r = lastRoot;
+            let fRoot = evaluateExpr(fxStr, {x: r});
+            let delta = Math.max(Math.abs(r), 1) * 1e-3;
+            let fIzq = evaluateExpr(fxStr, {x: r - delta});
+            let fDer = evaluateExpr(fxStr, {x: r + delta});
+            let cambiaSigno = (fIzq * fDer) < 0;
+            let tolUsada = getVal('tol') || 0.01;
+
+            let comprobacion = `Sustituimos la raíz obtenida en la función original:<br>
+                f(${linFmt(r, 8)}) = <span class="result-box">${linFmt(fRoot, 10)}</span><br><br>
+                Comportamiento en el entorno de la raíz (&delta; = ${linFmt(delta, 6)}):<br>
+                f(${linFmt(r - delta, 6)}) = ${linFmt(fIzq, 8)} &nbsp;&nbsp; f(${linFmt(r + delta, 6)}) = ${linFmt(fDer, 8)}<br>
+                ${cambiaSigno ? 'La función cambia de signo alrededor del valor obtenido, por lo que la raíz real queda encerrada en ese intervalo.' : 'No se observa cambio de signo en el entorno inmediato (puede tratarse de una raíz múltiple o tangente al eje).'}`;
+
+            if(currentMethod === 'pf') {
+                let gr = evaluateExpr(getStr('gx'), {x: r});
+                comprobacion += `<br><br>Además, un punto fijo debe cumplir x = g(x):<br>
+                    g(${linFmt(r, 8)}) = ${linFmt(gr, 10)} &nbsp; frente a &nbsp; x = ${linFmt(r, 8)} &nbsp; (diferencia: ${linFmt(Math.abs(gr - r), 10)})`;
+            }
+
+            table += buildVerif({
+                fundamento: `Por definición, una raíz de f es el valor de x donde la función vale cero. Por eso la única prueba válida es sustituir el valor obtenido en la <b>función original</b>: si f(x<sub>r</sub>) &asymp; 0, el número encontrado resuelve realmente la ecuación. No se compara contra un resultado previo, sino contra la ecuación que se quería resolver.`,
+                comprobacion: comprobacion,
+                ok: Math.abs(fRoot) < 0.01,
+                okTxt: `f(x<sub>r</sub>) &asymp; 0: el valor obtenido es una raíz válida de la ecuación.`,
+                malTxt: `f(x<sub>r</sub>) se aleja de 0: reduce la tolerancia o aumenta las iteraciones.`,
+                nota: `El residuo no es exactamente cero porque el proceso se detiene al alcanzar la tolerancia pedida (${linFmt(tolUsada)} %), no al llegar al valor exacto.`
+            });
         }
         res.innerHTML = (isDetailed ? html : '') + table;
         saveHistory(savedData);
@@ -1775,6 +2233,546 @@ function calcAction(act) {
     }
 }
 
+/* ================= MOTOR DE GRÁFICAS =================
+   Cada método publica una o varias vistas; el usuario alterna entre ellas
+   con las pestañas y cada vista trae su propia explicación. */
+const CHART_COLORS = {
+    curva: '#00d2ff',
+    curva2: '#8a2be2',
+    punto: '#2ed573',
+    aviso: '#ff4757',
+    guia: 'rgba(255,255,255,0.35)',
+    area: 'rgba(138, 43, 226, 0.25)'
+};
+
+let chartViews = [];
+let currentChartView = 0;
+
+function chartTextColor() {
+    return getComputedStyle(document.body).getPropertyValue('color').trim() || '#fff';
+}
+
+// Muestrea f(x) evitando valores no finitos (asíntotas, dominios vacíos)
+function sampleFn(fn, a, b, n = 220) {
+    let pts = [], paso = (b - a) / n;
+    for(let i = 0; i <= n; i++) {
+        let x = a + i * paso;
+        let y = fn(x);
+        if(isFinite(y) && Math.abs(y) < 1e12) pts.push({ x: x, y: y });
+    }
+    return pts;
+}
+
+function lineDS(label, data, color, extra) {
+    return Object.assign({
+        label: label,
+        type: 'line',
+        data: data,
+        borderColor: color,
+        backgroundColor: color,
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.15,
+        fill: false
+    }, extra || {});
+}
+
+function pointsDS(label, data, color, extra) {
+    return Object.assign({
+        label: label,
+        type: 'scatter',
+        data: data,
+        backgroundColor: color,
+        borderColor: color,
+        pointRadius: 6,
+        showLine: false
+    }, extra || {});
+}
+
+// Opciones comunes: ejes rotulados, tooltip legible y línea de referencia y = 0
+function chartCfg(o) {
+    const color = chartTextColor();
+    const grid = 'rgba(128,128,128,0.18)';
+    return {
+        type: 'scatter',
+        data: { datasets: o.datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 500 },
+            interaction: { mode: 'nearest', intersect: false, axis: 'x' },
+            scales: {
+                x: {
+                    type: 'linear',
+                    position: o.cruceEnCero ? 'center' : 'bottom',
+                    title: { display: true, text: o.xLabel || 'x', color: color },
+                    ticks: { color: color, maxTicksLimit: 11 },
+                    grid: { color: grid }
+                },
+                y: {
+                    type: o.logY ? 'logarithmic' : 'linear',
+                    title: { display: true, text: o.yLabel || 'y', color: color },
+                    ticks: { color: color },
+                    grid: { color: grid }
+                }
+            },
+            plugins: {
+                title: {
+                    display: !!o.title,
+                    text: o.title,
+                    color: color,
+                    font: { size: 15, weight: '600' },
+                    padding: { bottom: 10 }
+                },
+                legend: {
+                    labels: { color: color, usePointStyle: true, boxWidth: 10 }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: c => `${c.dataset.label}: (${o.xLabel || 'x'} = ${linFmt(c.parsed.x, 6)}, ${o.yLabel || 'y'} = ${linFmt(c.parsed.y, 6)})`
+                    }
+                }
+            }
+        }
+    };
+}
+
+function drawChartView(i) {
+    if(!chartViews[i]) return;
+    currentChartView = i;
+    let canvas = document.getElementById('mainChart');
+    if(!canvas) return;
+    let ctx = canvas.getContext('2d');
+    if(mainChart) { mainChart.destroy(); mainChart = null; }
+    mainChart = new Chart(ctx, chartViews[i].cfg);
+
+    let cap = document.getElementById('chartCaption');
+    if(cap) cap.innerHTML = chartViews[i].caption || '';
+
+    document.querySelectorAll('#chartTabs .chart-tab').forEach((b, k) => {
+        b.classList.toggle('active', k === i);
+    });
+}
+
+// Publica las vistas de gráfica del método actual
+function setCharts(views) {
+    chartViews = (views || []).filter(v => v && v.cfg);
+    let wrap = document.getElementById('mainChartWrap');
+    let tabs = document.getElementById('chartTabs');
+    if(!wrap || !tabs) return;
+
+    if(chartViews.length === 0) {
+        wrap.classList.add('hidden');
+        if(mainChart) { mainChart.destroy(); mainChart = null; }
+        return;
+    }
+
+    wrap.classList.remove('hidden');
+    tabs.innerHTML = '';
+    if(chartViews.length > 1) {
+        chartViews.forEach((v, i) => {
+            let b = document.createElement('button');
+            b.className = 'chart-tab';
+            b.innerText = v.name;
+            b.onclick = () => drawChartView(i);
+            tabs.appendChild(b);
+        });
+    }
+    drawChartView(0);
+}
+
+/* ---------- Vistas de gráfica por familia de métodos ---------- */
+
+// Convergencia del error relativo por iteración (escala logarítmica)
+function vistaConvergencia(errs, titulo, extraCaption) {
+    let datos = errs.map((e, i) => ({ x: i + 1, y: e })).filter(p => isFinite(p.y) && p.y > 0);
+    if(datos.length < 2) return null;
+    return {
+        name: 'Convergencia',
+        cfg: chartCfg({
+            title: titulo || 'Convergencia del error',
+            xLabel: 'Iteración',
+            yLabel: 'Error relativo (%)',
+            logY: true,
+            datasets: [
+                lineDS('Error (%)', datos, CHART_COLORS.aviso, { pointRadius: 4, tension: 0 })
+            ]
+        }),
+        caption: `Cada punto es el error relativo al terminar esa iteración, en escala logarítmica: <b>cuanto más rápido baja la curva, más rápido converge el método</b>. Una recta descendente indica convergencia lineal; una caída cada vez más pronunciada, convergencia cuadrática. ${extraCaption || ''}`
+    };
+}
+
+// Función f(x) con la raíz marcada + convergencia
+function vistasRaiz(fxStr, raiz, xs, errs, opts) {
+    opts = opts || {};
+    let vistas = [];
+    let refs = xs.filter(v => isFinite(v)).concat([raiz]);
+    if(isFinite(opts.a)) refs.push(opts.a);
+    if(isFinite(opts.b)) refs.push(opts.b);
+    let lo = Math.min.apply(null, refs), hi = Math.max.apply(null, refs);
+    let span = (hi - lo) || Math.max(Math.abs(raiz), 1);
+    let a = lo - span * 0.6, b = hi + span * 0.6;
+    let curva = sampleFn(x => evaluateExpr(fxStr, { x: x }), a, b, 300);
+    let fRaiz = evaluateExpr(fxStr, { x: raiz });
+
+    let ds = [
+        lineDS('f(x)', curva, CHART_COLORS.curva),
+        lineDS('y = 0', [{ x: a, y: 0 }, { x: b, y: 0 }], CHART_COLORS.guia, { borderDash: [6, 4], borderWidth: 1, tension: 0 }),
+        pointsDS('Raíz x = ' + linFmt(raiz, 6), [{ x: raiz, y: fRaiz }], CHART_COLORS.punto, { pointRadius: 10, pointStyle: 'rectRot' })
+    ];
+    if(isFinite(opts.a) && isFinite(opts.b)) {
+        ds.push(pointsDS('Intervalo inicial [a, b]', [
+            { x: opts.a, y: evaluateExpr(fxStr, { x: opts.a }) },
+            { x: opts.b, y: evaluateExpr(fxStr, { x: opts.b }) }
+        ], CHART_COLORS.curva2, { pointRadius: 7, pointStyle: 'triangle' }));
+    }
+
+    vistas.push({
+        name: 'Función y raíz',
+        cfg: chartCfg({ title: 'f(x) y la raíz encontrada', xLabel: 'x', yLabel: 'f(x)', datasets: ds }),
+        caption: `La curva azul es la función <b>f(x)</b>; la línea punteada es <b>y = 0</b>. La raíz es exactamente el punto donde ambas se cruzan, señalado con el rombo verde en x = ${linFmt(raiz, 6)}. Si la curva pasa de un lado al otro del eje, el cambio de signo confirma que la raíz está ahí. Pasa el cursor sobre la curva para leer los valores.`
+    });
+
+    let conv = vistaConvergencia(errs, 'Cómo se acercó el método a la raíz');
+    if(conv) vistas.push(conv);
+    return vistas;
+}
+
+// Punto fijo: g(x) frente a la recta y = x
+function vistasPuntoFijo(fxStr, gxStr, raiz, xs, errs) {
+    let refs = xs.filter(v => isFinite(v)).concat([raiz]);
+    let lo = Math.min.apply(null, refs), hi = Math.max.apply(null, refs);
+    let span = (hi - lo) || Math.max(Math.abs(raiz), 1);
+    let a = lo - span * 0.8, b = hi + span * 0.8;
+    let vistas = [{
+        name: 'g(x) y la recta y = x',
+        cfg: chartCfg({
+            title: 'El punto fijo es el corte de g(x) con y = x',
+            xLabel: 'x', yLabel: 'y',
+            datasets: [
+                lineDS('g(x)', sampleFn(x => evaluateExpr(gxStr, { x: x }), a, b, 300), CHART_COLORS.curva),
+                lineDS('y = x', [{ x: a, y: a }, { x: b, y: b }], CHART_COLORS.guia, { borderDash: [6, 4], borderWidth: 1, tension: 0 }),
+                pointsDS('Punto fijo x = ' + linFmt(raiz, 6), [{ x: raiz, y: raiz }], CHART_COLORS.punto, { pointRadius: 10, pointStyle: 'rectRot' })
+            ]
+        }),
+        caption: `Resolver f(x) = 0 se transformó en buscar <b>x = g(x)</b>. Por eso la solución aparece donde la curva g(x) corta la recta y = x (rombo verde). El método converge si la pendiente de g en ese punto es menor que 1 en valor absoluto: cuanto más horizontal sea g junto al corte, más rápido converge.`
+    }];
+    let conv = vistaConvergencia(errs, 'Cómo se acercó el método al punto fijo');
+    if(conv) vistas.push(conv);
+    return vistas;
+}
+
+// Curva interpoladora + puntos de soporte (+ punto evaluado)
+function vistasInterpolacion(fn, pts, xEval, yEval, titulo, explicacion) {
+    let xsAll = pts.map(p => p.x);
+    if(xEval !== null && isFinite(xEval)) xsAll.push(xEval);
+    let lo = Math.min.apply(null, xsAll), hi = Math.max.apply(null, xsAll);
+    let pad = (hi - lo) * 0.18 || 1;
+    let ds = [
+        lineDS('Curva interpoladora', sampleFn(fn, lo - pad, hi + pad, 300), CHART_COLORS.curva),
+        pointsDS('Puntos dados', pts.map(p => ({ x: p.x, y: p.y })), CHART_COLORS.curva2, { pointRadius: 7 })
+    ];
+    if(xEval !== null && isFinite(xEval) && isFinite(yEval)) {
+        ds.push(lineDS('Lectura del valor', [
+            { x: xEval, y: Math.min.apply(null, pts.map(p => p.y).concat([yEval])) },
+            { x: xEval, y: yEval },
+            { x: lo - pad, y: yEval }
+        ], CHART_COLORS.aviso, { borderDash: [6, 4], borderWidth: 1.5, tension: 0 }));
+        ds.push(pointsDS(`Valor calculado (${linFmt(xEval)}, ${linFmt(yEval, 6)})`, [{ x: xEval, y: yEval }], CHART_COLORS.punto, { pointRadius: 10, pointStyle: 'rectRot' }));
+    }
+    return [{
+        name: 'Curva y puntos',
+        cfg: chartCfg({ title: titulo, xLabel: 'x', yLabel: 'f(x)', datasets: ds }),
+        caption: explicacion || `Los puntos morados son los datos; la curva azul es la función construida, que <b>pasa exactamente por todos ellos</b>. Si la curva se aleja de algún punto, la interpolación sería incorrecta.`
+    }];
+}
+
+// Área bajo la curva y figura que usa la regla de integración
+function vistasIntegracion(fxStr, a, b, n, metodo, resultado) {
+    let pad = (b - a) * 0.12 || 1;
+    let curva = sampleFn(x => evaluateExpr(fxStr, { x: x }), a - pad, b + pad, 300);
+    let h = (b - a) / n;
+    let nodos = [];
+    for(let i = 0; i <= n; i++) {
+        let x = a + i * h;
+        nodos.push({ x: x, y: evaluateExpr(fxStr, { x: x }) });
+    }
+
+    // Figura de la aproximación: recta entre nodos (trapecio) o parábolas (Simpson)
+    let aprox = [];
+    if(metodo === 'trap') {
+        aprox = nodos.slice();
+    } else {
+        let paso = metodo === 's13' ? 2 : 3;
+        for(let i = 0; i + paso <= n; i += paso) {
+            let sub = [];
+            for(let k = 0; k <= paso; k++) sub.push(nodos[i + k]);
+            let dens = 14;
+            for(let t = 0; t <= dens; t++) {
+                let x = sub[0].x + (sub[paso].x - sub[0].x) * t / dens;
+                let y = 0;
+                for(let j = 0; j <= paso; j++) {
+                    let L = 1;
+                    for(let m = 0; m <= paso; m++) if(m !== j) L *= (x - sub[m].x) / (sub[j].x - sub[m].x);
+                    y += sub[j].y * L;
+                }
+                aprox.push({ x: x, y: y });
+            }
+        }
+    }
+    let nombre = metodo === 'trap' ? 'Trapecios' : metodo === 's13' ? 'Parábolas (Simpson 1/3)' : 'Cúbicas (Simpson 3/8)';
+
+    let vistas = [{
+        name: 'Área aproximada',
+        cfg: chartCfg({
+            title: `Área bajo f(x) entre ${linFmt(a)} y ${linFmt(b)} &asymp; ${linFmt(resultado, 6)}`,
+            xLabel: 'x', yLabel: 'f(x)',
+            datasets: [
+                lineDS(nombre + ' (área calculada)', aprox, CHART_COLORS.curva2, { fill: 'origin', backgroundColor: CHART_COLORS.area, tension: 0 }),
+                lineDS('f(x) real', curva, CHART_COLORS.curva),
+                pointsDS('Nodos usados', nodos, CHART_COLORS.punto, { pointRadius: 5 })
+            ]
+        }),
+        caption: `La región sombreada es <b>el área que el método calcula</b>: se sustituye la función por ${metodo === 'trap' ? 'segmentos rectos entre nodos' : 'arcos que pasan por cada grupo de nodos'}. Cuanto mejor se superpone esa figura a la curva azul, menor es el error. Aumentar n acerca ambas curvas.`
+    }];
+
+    // Convergencia al aumentar n
+    let datosN = [], ref = refIntegral(fxStr, a, b);
+    let mult = metodo === 's38' ? 3 : metodo === 's13' ? 2 : 1;
+    for(let k = 1; k <= 6; k++) {
+        let nn = mult * Math.pow(2, k);
+        let val = integrateRule(metodo, fxStr, a, b, nn);
+        let err = Math.abs(val - ref);
+        if(err > 0) datosN.push({ x: nn, y: err });
+    }
+    if(datosN.length > 1) {
+        vistas.push({
+            name: 'Error según n',
+            cfg: chartCfg({
+                title: 'El error disminuye al aumentar los subintervalos',
+                xLabel: 'n (subintervalos)', yLabel: 'Error absoluto',
+                logY: true,
+                datasets: [lineDS('Error frente a la integral refinada', datosN, CHART_COLORS.aviso, { pointRadius: 5, tension: 0 })]
+            }),
+            caption: `Error del método frente a una integral muy refinada, al duplicar n. La caída constante en escala logarítmica <b>confirma el orden del método</b>: ${metodo === 'trap' ? 'O(h²), el error se divide entre ~4 al duplicar n' : 'O(h⁴), el error se divide entre ~16 al duplicar n'}.`
+        });
+    }
+    return vistas;
+}
+
+// Solución de una EDO frente a la solución de referencia
+function vistasEDO(fxy, xs, ys, nombreMetodo) {
+    let ref = xs.map(x => ({ x: x, y: rk4Reference(fxy, xs[0], ys[0], x, Math.max(200, xs.length * 40)) }));
+    let numerica = xs.map((x, i) => ({ x: x, y: ys[i] }));
+    let errores = xs.map((x, i) => ({ x: x, y: Math.abs(ys[i] - ref[i].y) })).filter(p => p.y > 0);
+
+    let vistas = [{
+        name: 'Solución y(x)',
+        cfg: chartCfg({
+            title: `Solución de la EDO por ${nombreMetodo}`,
+            xLabel: 'x', yLabel: 'y(x)',
+            datasets: [
+                lineDS('Solución de referencia', ref, CHART_COLORS.guia, { borderWidth: 3, pointRadius: 0 }),
+                lineDS(nombreMetodo, numerica, CHART_COLORS.curva, { pointRadius: 5, tension: 0 })
+            ]
+        }),
+        caption: `Los puntos azules son los valores que calculó el método paso a paso; la línea gris gruesa es la solución de referencia (RK4 con paso muy fino). <b>La separación entre ambas es el error de truncamiento</b>: si se superponen, el paso h elegido es adecuado.`
+    }];
+    if(errores.length > 1) {
+        vistas.push({
+            name: 'Error acumulado',
+            cfg: chartCfg({
+                title: 'Cómo crece el error a lo largo del intervalo',
+                xLabel: 'x', yLabel: 'Error absoluto',
+                logY: true,
+                datasets: [lineDS('|y numérica − y referencia|', errores, CHART_COLORS.aviso, { pointRadius: 4, tension: 0 })]
+            }),
+            caption: `El error de un paso se arrastra a los siguientes, por eso suele crecer con x. Reducir h baja toda la curva: <b>a la mitad en Euler, unas 16 veces en RK4</b>.`
+        });
+    }
+    return vistas;
+}
+
+// Ajuste por mínimos cuadrados: curva + datos, y residuos
+function vistasAjuste(coeffs, pts, r2) {
+    const P = x => coeffs.reduce((sum, c, i) => sum + c * Math.pow(x, i), 0);
+    let lo = Math.min.apply(null, pts.map(p => p.x)), hi = Math.max.apply(null, pts.map(p => p.x));
+    let pad = (hi - lo) * 0.1 || 1;
+
+    let vistas = [{
+        name: 'Ajuste y datos',
+        cfg: chartCfg({
+            title: `Curva ajustada (R² = ${linFmt(r2, 6)})`,
+            xLabel: 'x', yLabel: 'y',
+            datasets: [
+                lineDS('Curva ajustada', sampleFn(P, lo - pad, hi + pad, 200), CHART_COLORS.curva),
+                pointsDS('Datos experimentales', pts.map(p => ({ x: p.x, y: p.y })), CHART_COLORS.aviso, { pointRadius: 7 })
+            ]
+        }),
+        caption: `A diferencia de la interpolación, la curva <b>no pasa por los puntos</b>: busca el mejor compromiso entre todos. La distancia vertical de cada dato a la curva es su residuo, y el método minimiza la suma de esos residuos al cuadrado.`
+    }];
+
+    let residuos = pts.map(p => ({ x: p.x, y: p.y - P(p.x) }));
+    vistas.push({
+        name: 'Residuos',
+        cfg: chartCfg({
+            title: 'Residuos: diferencia entre cada dato y la curva',
+            xLabel: 'x', yLabel: 'Residuo (y − P(x))',
+            cruceEnCero: true,
+            datasets: [
+                pointsDS('Residuo de cada dato', residuos, CHART_COLORS.punto, { pointRadius: 7 }),
+                lineDS('Residuo cero', [{ x: lo - pad, y: 0 }, { x: hi + pad, y: 0 }], CHART_COLORS.guia, { borderDash: [6, 4], borderWidth: 1, tension: 0 })
+            ]
+        }),
+        caption: `Si el modelo es adecuado, los residuos se reparten <b>arriba y abajo del cero sin seguir ningún patrón</b>. Si en cambio dibujan una curva, el grado elegido es insuficiente y conviene subirlo.`
+    });
+    return vistas;
+}
+
+// Sistemas iterativos: evolución de las incógnitas y del error
+function vistasSistemaIterativo(histX, histErr, nombreMetodo) {
+    let paleta = ['#00d2ff', '#8a2be2', '#2ed573', '#ff4757', '#ffa502', '#eccc68'];
+    let nVars = histX[0] ? histX[0].length : 0;
+    let ds = [];
+    for(let v = 0; v < nVars; v++) {
+        ds.push(lineDS('x' + (v + 1), histX.map((fila, i) => ({ x: i, y: fila[v] })), paleta[v % paleta.length], { pointRadius: 4, tension: 0 }));
+    }
+    let vistas = [{
+        name: 'Valores por iteración',
+        cfg: chartCfg({
+            title: `Cómo se estabilizan las incógnitas (${nombreMetodo})`,
+            xLabel: 'Iteración', yLabel: 'Valor de la incógnita',
+            datasets: ds
+        }),
+        caption: `Cada línea es una incógnita a lo largo de las iteraciones. <b>Cuando las líneas se aplanan, el método ha convergido</b>: los valores ya no cambian de una iteración a la siguiente. Si en cambio se separan cada vez más, el método diverge y la matriz no cumple la dominancia diagonal.`
+    }];
+    let conv = vistaConvergencia(histErr, 'Error entre iteraciones consecutivas');
+    if(conv) vistas.push(conv);
+    return vistas;
+}
+
+// Sistemas directos: residuo de cada ecuación (y rectas si el sistema es 2x2)
+function vistasSistemaDirecto(A, b, x, nombreMetodo) {
+    let vistas = [];
+    if(A.length === 2 && A[0].length === 2) {
+        let sols = x;
+        let span = Math.max(Math.abs(sols[0]), Math.abs(sols[1]), 1) * 2;
+        let lo = sols[0] - span, hi = sols[0] + span;
+        let rectas = [];
+        for(let i = 0; i < 2; i++) {
+            if(Math.abs(A[i][1]) > 1e-12) {
+                rectas.push(lineDS(`Ecuación ${i + 1}`, sampleFn(v => (b[i] - A[i][0] * v) / A[i][1], lo, hi, 60), i === 0 ? CHART_COLORS.curva : CHART_COLORS.curva2, { tension: 0 }));
+            }
+        }
+        rectas.push(pointsDS(`Solución (${linFmt(sols[0], 4)}, ${linFmt(sols[1], 4)})`, [{ x: sols[0], y: sols[1] }], CHART_COLORS.punto, { pointRadius: 10, pointStyle: 'rectRot' }));
+        vistas.push({
+            name: 'Rectas del sistema',
+            cfg: chartCfg({ title: 'La solución es el punto donde se cortan las ecuaciones', xLabel: 'x1', yLabel: 'x2', datasets: rectas }),
+            caption: `Cada ecuación de un sistema 2×2 es una recta en el plano. <b>La solución es su punto de corte</b>: por eso satisface ambas ecuaciones a la vez.`
+        });
+    }
+    let residuos = A.map((fila, i) => {
+        let suma = fila.reduce((acc, aij, j) => acc + aij * x[j], 0);
+        return { x: i + 1, y: Math.abs(suma - b[i]) };
+    });
+    vistas.push({
+        name: 'Residuos por ecuación',
+        cfg: chartCfg({
+            title: `Comprobación: |Ax − b| en cada ecuación (${nombreMetodo})`,
+            xLabel: 'Número de ecuación', yLabel: '|Residuo|',
+            datasets: [pointsDS('|Residuo|', residuos, CHART_COLORS.punto, { pointRadius: 9 })]
+        }),
+        caption: `Se sustituye la solución en cada ecuación original y se mide cuánto se aleja del término independiente. <b>Residuos prácticamente nulos significan que la solución es exacta</b>; valores apreciables indicarían un error de cálculo o un sistema mal condicionado.`
+    });
+    return vistas;
+}
+
+/* ================= VERIFICACIÓN DE RESULTADOS =================
+   Todo método cierra con un bloque que explica por qué su resultado es
+   correcto: el fundamento (qué propiedad matemática debe cumplirse),
+   la comprobación numérica y la conclusión. */
+function buildVerif(o) {
+    let estado = '';
+    if(o.ok !== undefined) {
+        estado = `<div class="verif-final"><span class="badge ${o.ok ? 'success' : 'danger'}">${o.ok ? (o.okTxt || 'Resultado verificado.') : (o.malTxt || 'La comprobación no se cumple; revisa los datos.')}</span></div>`;
+    }
+    return `<div class="step-card verification">
+        <h4>Verificación del resultado</h4>
+        <div class="verif-why"><b>Por qué esta comprobación lo valida:</b><br>${o.fundamento}</div>
+        <div class="verif-check"><b>Comprobación:</b><br>${o.comprobacion}</div>
+        ${estado}
+        ${o.nota ? `<div class="verif-note">${o.nota}</div>` : ''}
+    </div>`;
+}
+
+// Residuos de un sistema: sustituye la solución en cada ecuación original
+function residualTable(A, b, x) {
+    let filas = '', maxRes = 0;
+    for(let i = 0; i < A.length; i++) {
+        let suma = 0, expr = [];
+        for(let j = 0; j < A[i].length; j++) {
+            suma += A[i][j] * x[j];
+            expr.push(`(${linFmt(A[i][j], 4)})(${linFmt(x[j], 6)})`);
+        }
+        let r = Math.abs(suma - b[i]);
+        if(r > maxRes) maxRes = r;
+        filas += `<tr><td>${i + 1}</td><td style="text-align:left">${expr.join(' + ')}</td><td>${linFmt(suma, 8)}</td><td>${linFmt(b[i], 6)}</td><td>${linFmt(r, 10)}</td></tr>`;
+    }
+    return {
+        html: `<table><tr><th>Ec.</th><th>Sustitución en la ecuación original</th><th>Resultado</th><th>Término independiente</th><th>|Residuo|</th></tr>${filas}</table>`,
+        maxRes: maxRes
+    };
+}
+
+// Integral de referencia: Simpson 1/3 compuesto muy refinado
+function refIntegral(fx, a, b, n = 2000) {
+    if(n % 2 !== 0) n++;
+    let h = (b - a) / n;
+    let s = evaluateExpr(fx, { x: a }) + evaluateExpr(fx, { x: b });
+    for(let i = 1; i < n; i++) s += (i % 2 ? 4 : 2) * evaluateExpr(fx, { x: a + i * h });
+    return s * h / 3;
+}
+
+// Recalcula la misma regla de integración con otro número de intervalos
+function integrateRule(metodo, fx, a, b, n) {
+    let h = (b - a) / n, sum = 0;
+    for(let i = 0; i <= n; i++) {
+        let coef = 1;
+        if(i !== 0 && i !== n) {
+            if(metodo === 'trap') coef = 2;
+            else if(metodo === 's13') coef = i % 2 === 1 ? 4 : 2;
+            else if(metodo === 's38') coef = i % 3 === 0 ? 2 : 3;
+        }
+        sum += coef * evaluateExpr(fx, { x: a + i * h });
+    }
+    return sum * (metodo === 'trap' ? h / 2 : metodo === 's13' ? h / 3 : 3 * h / 8);
+}
+
+// Solución de referencia de una EDO con RK4 y paso muy pequeño
+function rk4Reference(fxy, x0, y0, xf, pasos = 2000) {
+    let h = (xf - x0) / pasos, x = x0, y = y0;
+    for(let i = 0; i < pasos; i++) {
+        let k1 = h * evaluateExpr(fxy, { x: x, y: y });
+        let k2 = h * evaluateExpr(fxy, { x: x + h / 2, y: y + k1 / 2 });
+        let k3 = h * evaluateExpr(fxy, { x: x + h / 2, y: y + k2 / 2 });
+        let k4 = h * evaluateExpr(fxy, { x: x + h, y: y + k3 });
+        y += (k1 + 2 * k2 + 2 * k3 + k4) / 6;
+        x += h;
+    }
+    return y;
+}
+
+// Polinomio de Lagrange evaluado en x
+function lagrangeAt(pts, x) {
+    let r = 0;
+    for(let i = 0; i < pts.length; i++) {
+        let L = 1;
+        for(let j = 0; j < pts.length; j++) if(j !== i) L *= (x - pts[j].x) / (pts[i].x - pts[j].x);
+        r += pts[i].y * L;
+    }
+    return r;
+}
+
 /* ========== POLINOMIOS (Newton / diferencias divididas) ========== */
 // Coeficientes en orden ascendente: [c0, c1, c2] = c0 + c1*x + c2*x^2
 function polyMul(p, q) {
@@ -1830,66 +2828,6 @@ function newtonPolyString(coefs, pts, numerico) {
 }
 
 // Gráfica de un polinomio con sus puntos de soporte
-function plotPolynomial(coefs, pts, xEval, yEval, titulo) {
-    let wrap = document.getElementById('mainChartWrap');
-    wrap.classList.remove('hidden');
-    let ctx = document.getElementById('mainChart').getContext('2d');
-    if(mainChart) mainChart.destroy();
-
-    const xsAll = pts.map(p => p.x).concat(xEval === null ? [] : [xEval]);
-    const minX = Math.min(...xsAll), maxX = Math.max(...xsAll);
-    const pad = (maxX - minX) * 0.2 || 1;
-    const a = minX - pad, b = maxX + pad;
-    const curva = [];
-    const paso = (b - a) / 200;
-    for(let x = a; x <= b + paso / 2; x += paso) curva.push({ x: x, y: polyEval(coefs, x) });
-
-    let datasets = [
-        {
-            label: titulo || 'Polinomio P(x)',
-            type: 'line',
-            data: curva,
-            borderColor: '#00d2ff',
-            borderWidth: 2,
-            pointRadius: 0,
-            fill: false
-        },
-        {
-            label: 'Puntos dados',
-            data: pts.map(p => ({ x: p.x, y: p.y })),
-            backgroundColor: '#8a2be2',
-            pointRadius: 7
-        }
-    ];
-
-    if(xEval !== null && !isNaN(xEval)) {
-        datasets.push({
-            label: `P(${linFmt(xEval)}) = ${linFmt(yEval, 6)}`,
-            data: [{ x: xEval, y: yEval }],
-            backgroundColor: '#2ed573',
-            pointRadius: 9,
-            pointStyle: 'rectRot'
-        });
-    }
-
-    mainChart = new Chart(ctx, {
-        type: 'scatter',
-        data: { datasets: datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: { type: 'linear', position: 'bottom', title: { display: true, text: 'x' } },
-                y: { title: { display: true, text: 'f(x)' } }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: { label: c => `(${linFmt(c.parsed.x)}, ${linFmt(c.parsed.y)})` }
-                }
-            }
-        }
-    });
-}
 
 /* ================= INTERPOLACIÓN LINEAL ================= */
 let linMode = 'y'; // 'y' = se conoce X y se calcula Y | 'x' = se conoce Y y se calcula X
@@ -2112,77 +3050,33 @@ function buildLinSteps(r) {
 }
 
 function plotLinearInterp(r) {
-    let wrap = document.getElementById('mainChartWrap');
-    wrap.classList.remove('hidden');
-    let ctx = document.getElementById('mainChart').getContext('2d');
-    if(mainChart) mainChart.destroy();
-
     const xs = [r.x1, r.x2, r.x3], ys = [r.y1, r.y2, r.y3];
-    const minX = Math.min(...xs), maxX = Math.max(...xs);
-    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+    const minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
     const padX = (maxX - minX) * 0.25 || Math.abs(maxX * 0.25) || 1;
     const padY = (maxY - minY) * 0.25 || Math.abs(maxY * 0.25) || 1;
-    const a = minX - padX, bb = maxX + padX;
+    const a = minX - padX, b = maxX + padX;
     const yAt = x => r.y1 + r.m * (x - r.x1);
 
-    mainChart = new Chart(ctx, {
-        type: 'scatter',
-        data: {
+    setCharts([{
+        name: 'Recta de interpolación',
+        cfg: chartCfg({
+            title: `Interpolación lineal entre (${linFmt(r.x1)}, ${linFmt(r.y1)}) y (${linFmt(r.x2)}, ${linFmt(r.y2)})`,
+            xLabel: r.vx,
+            yLabel: r.vy,
             datasets: [
-                {
-                    label: 'Recta de interpolación',
-                    type: 'line',
-                    data: [{ x: a, y: yAt(a) }, { x: bb, y: yAt(bb) }],
-                    borderColor: '#00d2ff',
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    fill: false
-                },
-                {
-                    label: 'Proyección del Punto 3',
-                    type: 'line',
-                    data: [
-                        { x: r.x3, y: minY - padY },
-                        { x: r.x3, y: r.y3 },
-                        { x: a, y: r.y3 }
-                    ],
-                    borderColor: '#ff4757',
-                    borderWidth: 1.5,
-                    borderDash: [6, 4],
-                    pointRadius: 0,
-                    fill: false
-                },
-                {
-                    label: 'Puntos conocidos (P1, P2)',
-                    data: [{ x: r.x1, y: r.y1 }, { x: r.x2, y: r.y2 }],
-                    backgroundColor: '#8a2be2',
-                    pointRadius: 7
-                },
-                {
-                    label: 'Punto calculado (P3)',
-                    data: [{ x: r.x3, y: r.y3 }],
-                    backgroundColor: '#2ed573',
-                    pointRadius: 9,
-                    pointStyle: 'rectRot'
-                }
+                lineDS('Recta que une los puntos conocidos', [{ x: a, y: yAt(a) }, { x: b, y: yAt(b) }], CHART_COLORS.curva, { tension: 0 }),
+                lineDS('Lectura del valor buscado', [
+                    { x: r.x3, y: minY - padY },
+                    { x: r.x3, y: r.y3 },
+                    { x: a, y: r.y3 }
+                ], CHART_COLORS.aviso, { borderDash: [6, 4], borderWidth: 1.5, tension: 0 }),
+                pointsDS('Puntos conocidos (P1 y P2)', [{ x: r.x1, y: r.y1 }, { x: r.x2, y: r.y2 }], CHART_COLORS.curva2, { pointRadius: 8 }),
+                pointsDS(`Punto calculado (${linFmt(r.x3, 4)}, ${linFmt(r.y3, 4)})`, [{ x: r.x3, y: r.y3 }], CHART_COLORS.punto, { pointRadius: 10, pointStyle: 'rectRot' })
             ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: { type: 'linear', position: 'bottom', title: { display: true, text: r.vx } },
-                y: { title: { display: true, text: r.vy } }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: c => '(' + r.vx + ': ' + linFmt(c.parsed.x) + ', ' + r.vy + ': ' + linFmt(c.parsed.y) + ')'
-                    }
-                }
-            }
-        }
-    });
+        }),
+        caption: `Los dos puntos morados son los datos conocidos y la línea azul es la recta que los une: <b>interpolar linealmente es leer un valor sobre esa recta</b>. La línea punteada roja muestra la lectura: se entra por ${r.vx} = ${linFmt(r.x3)}, se sube hasta la recta y se sale por ${r.vy} = ${linFmt(r.y3, 6)}. ${r.dentro ? 'El punto cae <b>entre</b> los dos conocidos, por eso es una interpolación.' : 'El punto cae <b>fuera</b> del tramo conocido: es una extrapolación y la recta ya no está respaldada por datos.'}`
+    }]);
 }
 
 function runLinInterp(save) {
@@ -2209,7 +3103,7 @@ function runLinInterp(save) {
 
     if(!r.ok) {
         panel.classList.remove('hidden');
-        document.getElementById('mainChartWrap').classList.add('hidden');
+        setCharts([]);
         res.innerHTML = `<div class="badge ${r.pending ? 'info' : 'danger'}">${r.msg}</div>`;
         return;
     }
@@ -2226,13 +3120,20 @@ function runLinInterp(save) {
     const colin = (r.x2 - r.x1) * (r.y3 - r.y1) - (r.y2 - r.y1) * (r.x3 - r.x1);
     const escala = Math.max(1, Math.abs(r.dx * r.dy));
 
-    let verif = `<div class="step-card verification"><h4>Verificación del resultado</h4>
-        Sustituyendo ${r.vx} = ${f(r.x3)} en la ecuación de la recta:<br>
-        ${r.vy} = ${f(r.m, 8)} &middot; ${f(r.x3)} ${r.b >= 0 ? '+' : '&minus;'} ${f(Math.abs(r.b), 8)} = <b>${f(yVerif, 8)}</b><br>
-        Diferencia con el valor obtenido: ${f(errAbs, 10)}<br>
-        Prueba de colinealidad de P<sub>1</sub>, P<sub>2</sub> y P<sub>3</sub>: (${r.vx}<sub>2</sub>&minus;${r.vx}<sub>1</sub>)(${r.vy}<sub>3</sub>&minus;${r.vy}<sub>1</sub>) &minus; (${r.vy}<sub>2</sub>&minus;${r.vy}<sub>1</sub>)(${r.vx}<sub>3</sub>&minus;${r.vx}<sub>1</sub>) = ${f(colin, 8)}<br>
-        ${Math.abs(colin) < 1e-8 * escala ? '<span class="badge success">Los tres puntos son colineales: el resultado es correcto.</span>' : '<span class="badge danger">Los puntos no resultan colineales, revisa los datos.</span>'}
-        </div>`;
+    let verif = buildVerif({
+        fundamento: `Interpolar linealmente significa suponer que los tres puntos están <b>sobre la misma recta</b>. Por eso la comprobación es doble: se sustituye el valor obtenido en la ecuación de esa recta, y se aplica la prueba de colinealidad, que da exactamente cero cuando P<sub>1</sub>, P<sub>2</sub> y P<sub>3</sub> están alineados. Si el punto calculado no fuera colineal con los datos, el valor no procedería de la recta que se planteó.`,
+        comprobacion: `Sustituyendo ${r.vx} = ${f(r.x3)} en la ecuación de la recta:<br>
+            ${r.vy} = ${f(r.m, 8)} &middot; ${f(r.x3)} ${r.b >= 0 ? '+' : '&minus;'} ${f(Math.abs(r.b), 8)} = <b>${f(yVerif, 8)}</b><br>
+            Diferencia con el valor obtenido: ${f(errAbs, 10)}<br><br>
+            Prueba de colinealidad de P<sub>1</sub>, P<sub>2</sub> y P<sub>3</sub>:<br>
+            (${r.vx}<sub>2</sub>&minus;${r.vx}<sub>1</sub>)(${r.vy}<sub>3</sub>&minus;${r.vy}<sub>1</sub>) &minus; (${r.vy}<sub>2</sub>&minus;${r.vy}<sub>1</sub>)(${r.vx}<sub>3</sub>&minus;${r.vx}<sub>1</sub>) = ${f(colin, 8)} (debe ser 0)`,
+        ok: Math.abs(colin) < 1e-8 * escala,
+        okTxt: `Los tres puntos son colineales: el valor interpolado es correcto.`,
+        malTxt: `Los puntos no resultan colineales; revisa los datos introducidos.`,
+        nota: r.dentro
+            ? `El punto pedido está dentro del tramo conocido, que es donde la hipótesis de linealidad está respaldada por los datos.`
+            : `Atención: el punto pedido queda fuera del tramo conocido. El cálculo es correcto, pero supone que la recta sigue siendo válida más allá de los datos disponibles.`
+    });
 
     let aviso = r.dentro
         ? `<span class="badge success">Interpolación: ${r.vx}<sub>3</sub> = ${f(r.x3)} está dentro del intervalo [${f(Math.min(r.x1, r.x2))}, ${f(Math.max(r.x1, r.x2))}].</span>`
