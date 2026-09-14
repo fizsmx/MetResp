@@ -43,6 +43,7 @@ La plataforma se ejecuta de manera totalmente local en el navegador del usuario,
 - Verificación de Resultados: Sistema automático que sustituye los resultados obtenidos en las ecuaciones y funciones originales para comprobar matemáticamente la validez de la respuesta.
 - Modalidad de visualización dual: Alternancia entre modo detallado (demostración completa de cada cálculo) y modo compacto (tablas sinópticas de convergencia rápida).
 - Gráficas de convergencia y funciones: Representación gráfica interactiva del comportamiento de las funciones, interpolaciones, ajustes y curvas de convergencia del error relativo con Chart.js.
+- Cálculo en tiempo real: En la calculadora de interpolación lineal el resultado, la gráfica y el desarrollo se actualizan automáticamente conforme se introducen los datos, sin necesidad de pulsar ningún botón.
 - Exportación múltiple: Generación de reportes limpios en texto plano (.txt) y exportación directa a documento imprimible o PDF.
 - Historial persistente en almacenamiento local: Registro automático de ejercicios evaluados mediante Web Storage API (localStorage), permitiendo recuperar estados y datos previos sin pérdida de información.
 - Sistema de temas: Interfaz conmutable entre modo oscuro y modo claro con persistencia de configuración del usuario.
@@ -73,7 +74,7 @@ Motor de análisis léxico y sintáctico que interpreta enunciados de problemas 
 
 ## Catálogo de Métodos Numéricos
 
-El software cuenta con 19 métodos numéricos distribuidos en 6 áreas disciplinarias del análisis numérico.
+El software cuenta con 20 métodos numéricos distribuidos en 6 áreas disciplinarias del análisis numérico.
 
 ### Raíces de Ecuaciones
 
@@ -116,15 +117,18 @@ Método directo que descompone la matriz del sistema en el producto de una matri
 
 ### Interpolación
 
-Determinación de polinomios que pasan de forma exacta por un conjunto de puntos.
+Estimación de valores intermedios a partir de datos conocidos, desde la recta entre dos puntos hasta polinomios que pasan de forma exacta por un conjunto de puntos.
 
-#### 10. Interpolación de Lagrange
+#### 10. Interpolación Lineal
+Estimación de un valor intermedio a partir de dos puntos conocidos suponiendo comportamiento rectilíneo entre ellos. La calculadora permite nombrar libremente ambas variables, introducir los dos puntos conocidos y el valor conocido (X ó Y) del tercer punto: el valor faltante se obtiene de forma automática mientras se escribe, junto con la gráfica de la recta y el desarrollo completo del cálculo (incrementos, pendiente, despeje, sustitución numérica, ecuación de la recta y verificación por colinealidad). El sistema distingue además entre interpolación y extrapolación según la ubicación del punto solicitado.
+
+#### 11. Interpolación de Lagrange
 Construcción directa del polinomio interpolador mediante combinaciones lineales ponderadas de polinomios base.
 
-#### 11. Interpolación de Newton (Diferencias Divididas)
+#### 12. Interpolación de Newton (Diferencias Divididas)
 Formulación polinómica basada en coeficientes progresivos obtenidos mediante la tabla de diferencias divididas.
 
-#### 12. Splines Cúbicos
+#### 13. Splines Cúbicos
 Interpolación segmentada mediante polinomios de tercer grado unidos con condiciones de suavidad continua hasta su segunda derivada, evitando el fenómeno de oscilación de Runge en los extremos.
 
 ---
@@ -133,16 +137,16 @@ Interpolación segmentada mediante polinomios de tercer grado unidos con condici
 
 Aproximación de integrales definidas a través de diversas fórmulas.
 
-#### 13. Regla del Trapecio
+#### 14. Regla del Trapecio
 Aproximación lineal simple y compuesta en subintervalos.
 
-#### 14. Simpson 1/3
+#### 15. Simpson 1/3
 Aproximación por segmentos parabólicos de segundo orden para intervalos subdivididos en un número par de partes.
 
-#### 15. Simpson 3/8
+#### 16. Simpson 3/8
 Aproximación cúbica de tercer orden diseñada para particiones donde el número de subintervalos es múltiplo de 3.
 
-#### 16. Romberg
+#### 17. Romberg
 Técnica de mejora de precisión que combina repetidamente el método del trapecio mediante extrapolación de Richardson, logrando resultados de alta exactitud computacional.
 
 ---
@@ -151,10 +155,10 @@ Técnica de mejora de precisión que combina repetidamente el método del trapec
 
 Aproximación numérica de problemas de valor inicial.
 
-#### 17. Método de Euler
+#### 18. Método de Euler
 Esquema explícito de primer orden basado en la aproximación por serie de Taylor truncada.
 
-#### 18. Runge-Kutta de 4to Orden (RK4)
+#### 19. Runge-Kutta de 4to Orden (RK4)
 Método de alta precisión y estabilidad que promedia cuatro evaluaciones de pendiente ponderadas dentro de cada intervalo.
 
 ---
@@ -163,7 +167,7 @@ Método de alta precisión y estabilidad que promedia cuatro evaluaciones de pen
 
 Modelado estadístico y funcional para conjuntos de datos experimentales.
 
-#### 19. Mínimos Cuadrados
+#### 20. Mínimos Cuadrados
 Minimización de la suma de los residuos al cuadrado para ajustar de forma óptima un modelo lineal o polinomial, analizando posteriormente el nivel de correlación y la calidad general del ajuste.
 
 ---

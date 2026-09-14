@@ -384,6 +384,57 @@
             margin-bottom: 0.5rem;
         }
         .theory-box b { color: var(--primary); }
+
+        /* ===== Interpolación Lineal (tabla) ===== */
+        .lin-full { grid-column: 1 / -1; }
+        .lin-table {
+            width: 100%;
+            max-width: 620px;
+            border-collapse: collapse;
+            margin: 0 auto;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+        .lin-table th, .lin-table td {
+            border: 1px solid var(--glass-border);
+            padding: 0.5rem 0.7rem;
+            text-align: center;
+        }
+        .lin-table th { background: var(--primary); color: #fff; }
+        .lin-table th.corner { background: transparent; }
+        .lin-table td.row-label {
+            text-align: left;
+            font-weight: 600;
+            background: var(--glass-bg);
+            white-space: nowrap;
+        }
+        .lin-table td.section {
+            text-align: left;
+            font-weight: 700;
+            color: var(--secondary);
+            background: var(--glass-bg);
+            letter-spacing: 0.02em;
+        }
+        .lin-table input {
+            width: 100%;
+            padding: 0.45rem;
+            text-align: center;
+            border-radius: 6px;
+        }
+        .lin-table input.var-name { font-weight: 700; color: var(--secondary); }
+        .lin-table input.auto-filled {
+            border-color: var(--success);
+            color: var(--success);
+            background: rgba(46, 213, 115, 0.10);
+            font-weight: 700;
+        }
+        .lin-hint {
+            font-size: 0.82rem;
+            opacity: 0.8;
+            margin-top: 0.6rem;
+            text-align: center;
+        }
+        .lin-status { margin-top: 0.6rem; text-align: center; }
     </style>
 </head>
 <body>
@@ -525,6 +576,7 @@ const methods = {
         { id: 'lu', name: 'Factorización LU', inputs: ['sys_n', 'sys_matrix'], theory: '<h4>Factorización LU</h4><p>Descompone A = L·U. Eficiente para resolver múltiples sistemas con la misma matriz.</p>', examples: [{ name: 'Ejemplo 1', data: { sys_n: '3', sys_matrix: '2,1,-1,8\n-3,-1,2,-11\n-2,1,2,-3' } }, { name: 'Ejemplo 2', data: { sys_n: '3', sys_matrix: '1,1,1,6\n2,3,1,14\n1,2,3,14' } }] }
     ],
     interpolacion: [
+        { id: 'linint', name: 'Interpolación Lineal', inputs: ['lin_table'], theory: '<h4>Interpolación Lineal</h4><p>Estima el valor de una variable entre dos puntos conocidos suponiendo que entre ellos la relación es una <b>línea recta</b>. Partiendo de la igualdad de pendientes entre el segmento (P₁,P₂) y el segmento (P₁,P₃):</p><p><b>(Y − Y₁) / (X − X₁) = (Y₂ − Y₁) / (X₂ − X₁)</b></p><p>Despejando se obtiene <b>Y = Y₁ + (X − X₁)·(Y₂ − Y₁)/(X₂ − X₁)</b> y, de forma simétrica, <b>X = X₁ + (Y − Y₁)·(X₂ − X₁)/(Y₂ − Y₁)</b>. Introduce los dos puntos conocidos y el valor conocido (X ó Y) del tercer punto: el resultado, la gráfica y el desarrollo se calculan automáticamente.</p>', examples: [{ name: 'Presión vs. Temperatura', data: { lin_varx: 'T', lin_vary: 'P', lin_x1: '20', lin_y1: '2.34', lin_x2: '30', lin_y2: '4.24', lin_x3: '25' } }, { name: 'Tabla de vapor', data: { lin_varx: 'h', lin_vary: 's', lin_x1: '2700', lin_y1: '7.1', lin_x2: '2800', lin_y2: '7.4', lin_x3: '2750' } }, { name: 'Genérico (X, Y)', data: { lin_varx: 'X', lin_vary: 'Y', lin_x1: '1', lin_y1: '3', lin_x2: '5', lin_y2: '11', lin_x3: '3' } }] },
         { id: 'lag', name: 'Lagrange', inputs: ['points', 'x_eval'], theory: '<h4>Interpolación de Lagrange</h4><p>Interpolación polinómica exacta. P(x) pasa por todos los n puntos. Grado n-1.</p>', examples: [{ name: 'Ejemplo 1', data: { x_eval: '2.5' } }, { name: 'Ejemplo 2', data: { x_eval: '1.5' } }] },
         { id: 'new', name: 'Newton (Dif. Divididas)', inputs: ['points', 'x_eval'], theory: '<h4>Newton (Diferencias Divididas)</h4><p>Usa tabla de diferencias divididas. Fácil agregar nuevos puntos sin recalcular todo.</p>', examples: [{ name: 'Ejemplo 1', data: { x_eval: '2.5' } }, { name: 'Ejemplo 2', data: { x_eval: '1.5' } }] },
         { id: 'spline', name: 'Splines Cúbicos', inputs: ['points', 'x_eval'], theory: '<h4>Splines Cúbicos</h4><p>Polinomios cúbicos por tramos. Suavidad C². Evita el fenómeno de Runge.</p>', examples: [{ name: 'Ejemplo 1', data: { x_eval: '1.5' } }] }
@@ -566,7 +618,8 @@ const inputDefinitions = {
     degree: { label: 'Grado del Polinomio', type: 'number', placeholder: '1' },
     sys_n: { label: 'Tamaño (n)', type: 'number', placeholder: '3' },
     sys_matrix: { label: 'Matriz (A|B) o Ecuaciones', isTextarea: true, placeholder: '2, 1, -1, 8\n-3, -1, 2, -11\n-2, 1, 2, -3' },
-    points: { label: 'Puntos (x,y)', isPoints: true }
+    points: { label: 'Puntos (x,y)', isPoints: true },
+    lin_table: { label: 'Datos de la interpolación', isLinTable: true }
 };
 
 let currentCategory = 'raices';
@@ -731,10 +784,16 @@ function updateUI() {
             btn.style.background = 'var(--secondary)';
             btn.innerText = 'Ejemplo: ' + ex.name;
             btn.onclick = () => {
+                if(currentMethod === 'linint') resetLinTable();
                 Object.entries(ex.data).forEach(([k, v]) => {
                     let el = document.getElementById(`inp_${k}`);
-                    if(el) el.value = v;
+                    if(el) { el.value = v; el.classList.remove('auto-filled'); }
                 });
+                if(currentMethod === 'linint') {
+                    linMode = (ex.data.lin_y3 !== undefined && ex.data.lin_x3 === undefined) ? 'x' : 'y';
+                    syncLinHeaders();
+                    runLinInterp(false);
+                }
             };
             exDiv.appendChild(btn);
         });
@@ -746,15 +805,18 @@ function updateUI() {
         let grp = document.createElement('div');
         grp.className = 'form-group';
         grp.innerHTML = `<label>${def.label}</label>`;
-        
-        if (def.isPoints) {
+        form.appendChild(grp); // insertar antes de construir: los widgets buscan sus inputs por id
+
+        if (def.isLinTable) {
+            grp.classList.add('lin-full');
+            createLinTableInput(grp);
+        } else if (def.isPoints) {
             createPointsInput(inp, grp);
         } else if (def.isTextarea) {
             grp.innerHTML += `<textarea id="inp_${inp}" placeholder="${def.placeholder}"></textarea>`;
         } else {
             grp.innerHTML += `<input type="${def.type || 'text'}" id="inp_${inp}" placeholder="${def.placeholder}">`;
         }
-        form.appendChild(grp);
     });
 
     document.getElementById('resultsPanel').classList.add('hidden');
@@ -797,6 +859,7 @@ document.getElementById('historySelect').addEventListener('change', (e) => {
     updateUI();
     
     // Fill inputs
+    if(item.cat === 'interpolacion' && item.method === 'linint') resetLinTable();
     Object.keys(item.data).forEach(k => {
         let el = document.getElementById(`inp_${k}`);
         if(el) {
@@ -807,6 +870,8 @@ document.getElementById('historySelect').addEventListener('change', (e) => {
             }
         }
     });
+
+    if(currentMethod === 'linint') { linMode = 'y'; syncLinHeaders(); runLinInterp(false); }
 });
 
 /* ================= THEME ================= */
@@ -875,6 +940,8 @@ function plotFunction(expr, rootX) {
 /* ================= ENGINE MATEMÁTICO ================= */
 
 document.getElementById('solveBtn').addEventListener('click', () => {
+    if(currentMethod === 'linint') { runLinInterp(true); return; }
+
     let res = document.getElementById('resultsContent');
     res.innerHTML = '';
     document.getElementById('resultsPanel').classList.remove('hidden');
@@ -1483,6 +1550,7 @@ function renderMatrix(mat) {
 }
 
 document.getElementById('detailedToggle').addEventListener('change', () => {
+    if(currentMethod === 'linint') { runLinInterp(false); return; }
     document.getElementById('solveBtn').click();
 });
 
@@ -1499,6 +1567,7 @@ document.getElementById('smartInput').addEventListener('change', (e) => {
     else if(text.includes('jacobi')) { currentCategory='sistemas'; currentMethod='jac'; }
     else if(text.includes('gauss') && text.includes('seidel')) { currentCategory='sistemas'; currentMethod='gs'; }
     else if(text.includes('factorizacion') || text.includes('lu')) { currentCategory='sistemas'; currentMethod='lu'; }
+    else if((text.includes('interpol') && text.includes('lineal')) || text.includes('interpolacion lineal') || text.includes('interpolación lineal')) { currentCategory='interpolacion'; currentMethod='linint'; }
     else if(text.includes('lagrange')) { currentCategory='interpolacion'; currentMethod='lag'; }
     else if(text.includes('newton') && (text.includes('interp') || text.includes('dividid'))) { currentCategory='interpolacion'; currentMethod='new'; }
     else if(text.includes('spline')) { currentCategory='interpolacion'; currentMethod='spline'; }
@@ -1556,6 +1625,380 @@ function calcAction(act) {
     else {
         calcExpr += act;
         disp.innerText = calcExpr;
+    }
+}
+
+/* ================= INTERPOLACIÓN LINEAL ================= */
+let linMode = 'y'; // 'y' = se conoce X y se calcula Y | 'x' = se conoce Y y se calcula X
+
+function linFmt(v, d = 6) {
+    if(v === null || v === undefined || isNaN(v)) return '—';
+    if(!isFinite(v)) return '∞';
+    let r = parseFloat(v.toFixed(d));
+    if(Object.is(r, -0)) r = 0;
+    return String(r);
+}
+
+function linEl(id) { return document.getElementById('inp_' + id); }
+
+function linNum(id) {
+    let el = linEl(id);
+    if(!el || el.value.trim() === '') return null;
+    let v = parseFloat(el.value);
+    return isNaN(v) ? null : v;
+}
+
+function linVarNames() {
+    let ex = linEl('lin_varx');
+    let ey = linEl('lin_vary');
+    let vx = (ex ? ex.value : '').trim() || 'X';
+    let vy = (ey ? ey.value : '').trim() || 'Y';
+    return { vx, vy };
+}
+
+function syncLinHeaders() {
+    const { vx, vy } = linVarNames();
+    let hx = document.getElementById('linHeadX');
+    let hy = document.getElementById('linHeadY');
+    if(hx) hx.innerText = vx;
+    if(hy) hy.innerText = vy;
+    let hint = document.getElementById('linHint');
+    if(hint) hint.innerHTML = linMode === 'y'
+        ? 'Escribe <b>' + vx + '</b> en el Punto 3 y <b>' + vy + '</b> se calcula automáticamente (o escribe ' + vy + ' para obtener ' + vx + ').'
+        : 'Escribe <b>' + vy + '</b> en el Punto 3 y <b>' + vx + '</b> se calcula automáticamente (o escribe ' + vx + ' para obtener ' + vy + ').';
+}
+
+function resetLinTable() {
+    ['lin_x3', 'lin_y3'].forEach(k => {
+        let el = linEl(k);
+        if(el) { el.value = ''; el.classList.remove('auto-filled'); }
+    });
+    linMode = 'y';
+}
+
+function createLinTableInput(container) {
+    let wrap = document.createElement('div');
+    wrap.id = 'inp_lin_table';
+    wrap.dataset.type = 'linTable';
+    wrap.innerHTML = `
+        <table class="lin-table">
+            <tr>
+                <th class="corner"></th>
+                <th id="linHeadX">X</th>
+                <th id="linHeadY">Y</th>
+            </tr>
+            <tr>
+                <td class="row-label">Nombre<br>variable</td>
+                <td><input type="text" id="inp_lin_varx" class="var-name" value="X"></td>
+                <td><input type="text" id="inp_lin_vary" class="var-name" value="Y"></td>
+            </tr>
+            <tr><td class="section" colspan="3">Puntos conocidos:</td></tr>
+            <tr>
+                <td class="row-label">Punto 1</td>
+                <td><input type="number" step="any" id="inp_lin_x1" placeholder="x1"></td>
+                <td><input type="number" step="any" id="inp_lin_y1" placeholder="y1"></td>
+            </tr>
+            <tr>
+                <td class="row-label">Punto 2</td>
+                <td><input type="number" step="any" id="inp_lin_x2" placeholder="x2"></td>
+                <td><input type="number" step="any" id="inp_lin_y2" placeholder="y2"></td>
+            </tr>
+            <tr><td class="section" colspan="3">Punto a calcular:</td></tr>
+            <tr>
+                <td class="row-label">Punto 3</td>
+                <td><input type="number" step="any" id="inp_lin_x3" placeholder="x3"></td>
+                <td><input type="number" step="any" id="inp_lin_y3" placeholder="y3"></td>
+            </tr>
+        </table>
+        <div class="lin-hint" id="linHint"></div>
+    `;
+    container.appendChild(wrap);
+
+    ['lin_varx', 'lin_vary'].forEach(k => {
+        linEl(k).addEventListener('input', () => { syncLinHeaders(); runLinInterp(false); });
+    });
+    ['lin_x1', 'lin_y1', 'lin_x2', 'lin_y2'].forEach(k => {
+        linEl(k).addEventListener('input', () => runLinInterp(false));
+    });
+    linEl('lin_x3').addEventListener('input', () => {
+        linMode = 'y';
+        syncLinHeaders();
+        runLinInterp(false);
+    });
+    linEl('lin_y3').addEventListener('input', () => {
+        linMode = 'x';
+        syncLinHeaders();
+        runLinInterp(false);
+    });
+
+    linMode = 'y';
+    syncLinHeaders();
+}
+
+function computeLinInterp() {
+    const { vx, vy } = linVarNames();
+    const x1 = linNum('lin_x1'), y1 = linNum('lin_y1');
+    const x2 = linNum('lin_x2'), y2 = linNum('lin_y2');
+
+    if([x1, y1, x2, y2].some(v => v === null))
+        return { ok: false, pending: true, msg: `Completa los dos puntos conocidos: (${vx}<sub>1</sub>, ${vy}<sub>1</sub>) y (${vx}<sub>2</sub>, ${vy}<sub>2</sub>).`, vx, vy };
+
+    if(x1 === x2 && y1 === y2)
+        return { ok: false, msg: 'El Punto 1 y el Punto 2 son idénticos: no definen una recta.', vx, vy };
+
+    const known = linMode === 'y' ? linNum('lin_x3') : linNum('lin_y3');
+    if(known === null)
+        return { ok: false, pending: true, msg: linMode === 'y'
+            ? `Introduce el valor conocido ${vx}<sub>3</sub> del Punto 3.`
+            : `Introduce el valor conocido ${vy}<sub>3</sub> del Punto 3.`, vx, vy };
+
+    if(linMode === 'y' && x1 === x2)
+        return { ok: false, msg: `${vx}<sub>1</sub> y ${vx}<sub>2</sub> son iguales: la recta es vertical y ${vy} no queda determinada.`, vx, vy };
+    if(linMode === 'x' && y1 === y2)
+        return { ok: false, msg: `${vy}<sub>1</sub> y ${vy}<sub>2</sub> son iguales: la recta es horizontal y ${vx} no puede despejarse.`, vx, vy };
+
+    const dx = x2 - x1, dy = y2 - y1;
+    const m = dy / dx;
+    const b = y1 - m * x1;
+
+    let x3, y3;
+    if(linMode === 'y') {
+        x3 = known;
+        y3 = y1 + (x3 - x1) * (dy / dx);
+    } else {
+        y3 = known;
+        x3 = x1 + (y3 - y1) * (dx / dy);
+    }
+
+    if(!isFinite(x3) || !isFinite(y3))
+        return { ok: false, msg: 'El resultado no es un número finito. Revisa los datos ingresados.', vx, vy };
+
+    const lo = Math.min(x1, x2), hi = Math.max(x1, x2);
+    const dentro = x3 >= lo && x3 <= hi;
+
+    return { ok: true, vx, vy, x1, y1, x2, y2, x3, y3, dx, dy, m, b, dentro, mode: linMode };
+}
+
+function buildLinSteps(r) {
+    const { vx, vy, x1, y1, x2, y2, x3, y3, dx, dy, m, b } = r;
+    const f = linFmt;
+    let steps = [];
+
+    steps.push({
+        t: '1. Datos del problema',
+        c: `<table style="max-width:440px;margin:0.5rem auto;">
+            <tr><th></th><th>${vx}</th><th>${vy}</th></tr>
+            <tr><td>Punto 1</td><td>${f(x1)}</td><td>${f(y1)}</td></tr>
+            <tr><td>Punto 2</td><td>${f(x2)}</td><td>${f(y2)}</td></tr>
+            <tr><td>Punto 3</td>
+                <td${r.mode === 'y' ? '' : ' style="color:var(--success);font-weight:700"'}>${f(x3)}</td>
+                <td${r.mode === 'x' ? '' : ' style="color:var(--success);font-weight:700"'}>${f(y3)}</td>
+            </tr>
+        </table>
+        Dato conocido del Punto 3: <b>${r.mode === 'y' ? vx + '<sub>3</sub> = ' + f(x3) : vy + '<sub>3</sub> = ' + f(y3)}</b> &nbsp;|&nbsp; Incógnita: <b>${r.mode === 'y' ? vy + '<sub>3</sub>' : vx + '<sub>3</sub>'}</b>`
+    });
+
+    steps.push({
+        t: '2. Planteamiento (semejanza de triángulos)',
+        c: `Los tres puntos pertenecen a la misma recta, por lo que las pendientes de los segmentos P<sub>1</sub>P<sub>3</sub> y P<sub>1</sub>P<sub>2</sub> son iguales:<br><br>
+            <span class="math-expr">(${vy} &minus; ${vy}<sub>1</sub>) / (${vx} &minus; ${vx}<sub>1</sub>) = (${vy}<sub>2</sub> &minus; ${vy}<sub>1</sub>) / (${vx}<sub>2</sub> &minus; ${vx}<sub>1</sub>)</span>`
+    });
+
+    steps.push({
+        t: '3. Incrementos y pendiente',
+        c: `&Delta;${vx} = ${vx}<sub>2</sub> &minus; ${vx}<sub>1</sub> = ${f(x2)} &minus; ${f(x1)} = <b>${f(dx)}</b><br>
+            &Delta;${vy} = ${vy}<sub>2</sub> &minus; ${vy}<sub>1</sub> = ${f(y2)} &minus; ${f(y1)} = <b>${f(dy)}</b><br>
+            m = &Delta;${vy} / &Delta;${vx} = ${f(dy)} / ${f(dx)} = <b>${f(m, 8)}</b>`
+    });
+
+    if(r.mode === 'y') {
+        steps.push({
+            t: '4. Despeje de la incógnita',
+            c: `<span class="math-expr">${vy}<sub>3</sub> = ${vy}<sub>1</sub> + (${vx}<sub>3</sub> &minus; ${vx}<sub>1</sub>) &middot; (${vy}<sub>2</sub> &minus; ${vy}<sub>1</sub>) / (${vx}<sub>2</sub> &minus; ${vx}<sub>1</sub>)</span>`
+        });
+        steps.push({
+            t: '5. Sustitución de valores',
+            c: `${vy}<sub>3</sub> = ${f(y1)} + (${f(x3)} &minus; ${f(x1)}) &middot; (${f(y2)} &minus; ${f(y1)}) / (${f(x2)} &minus; ${f(x1)})<br>
+                ${vy}<sub>3</sub> = ${f(y1)} + (${f(x3 - x1)}) &middot; (${f(dy)} / ${f(dx)})<br>
+                ${vy}<sub>3</sub> = ${f(y1)} + (${f(x3 - x1)}) &middot; (${f(m, 8)})<br>
+                ${vy}<sub>3</sub> = ${f(y1)} + ${f((x3 - x1) * m, 8)}<br>
+                ${vy}<sub>3</sub> = <b>${f(y3, 8)}</b>`
+        });
+    } else {
+        steps.push({
+            t: '4. Despeje de la incógnita',
+            c: `<span class="math-expr">${vx}<sub>3</sub> = ${vx}<sub>1</sub> + (${vy}<sub>3</sub> &minus; ${vy}<sub>1</sub>) &middot; (${vx}<sub>2</sub> &minus; ${vx}<sub>1</sub>) / (${vy}<sub>2</sub> &minus; ${vy}<sub>1</sub>)</span>`
+        });
+        steps.push({
+            t: '5. Sustitución de valores',
+            c: `${vx}<sub>3</sub> = ${f(x1)} + (${f(y3)} &minus; ${f(y1)}) &middot; (${f(x2)} &minus; ${f(x1)}) / (${f(y2)} &minus; ${f(y1)})<br>
+                ${vx}<sub>3</sub> = ${f(x1)} + (${f(y3 - y1)}) &middot; (${f(dx)} / ${f(dy)})<br>
+                ${vx}<sub>3</sub> = ${f(x1)} + (${f(y3 - y1)}) &middot; (${f(dx / dy, 8)})<br>
+                ${vx}<sub>3</sub> = ${f(x1)} + ${f((y3 - y1) * (dx / dy), 8)}<br>
+                ${vx}<sub>3</sub> = <b>${f(x3, 8)}</b>`
+        });
+    }
+
+    steps.push({
+        t: '6. Ecuación de la recta que une P<sub>1</sub> y P<sub>2</sub>',
+        c: `<span class="math-expr">${vy} = ${f(m, 8)} &middot; ${vx} ${b >= 0 ? '+' : '&minus;'} ${f(Math.abs(b), 8)}</span><br>
+            Forma punto-pendiente: ${vy} &minus; ${f(y1)} = ${f(m, 8)} &middot; (${vx} &minus; ${f(x1)})`
+    });
+
+    return steps;
+}
+
+function plotLinearInterp(r) {
+    let wrap = document.getElementById('mainChartWrap');
+    wrap.classList.remove('hidden');
+    let ctx = document.getElementById('mainChart').getContext('2d');
+    if(mainChart) mainChart.destroy();
+
+    const xs = [r.x1, r.x2, r.x3], ys = [r.y1, r.y2, r.y3];
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const padX = (maxX - minX) * 0.25 || Math.abs(maxX * 0.25) || 1;
+    const padY = (maxY - minY) * 0.25 || Math.abs(maxY * 0.25) || 1;
+    const a = minX - padX, bb = maxX + padX;
+    const yAt = x => r.y1 + r.m * (x - r.x1);
+
+    mainChart = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [
+                {
+                    label: 'Recta de interpolación',
+                    type: 'line',
+                    data: [{ x: a, y: yAt(a) }, { x: bb, y: yAt(bb) }],
+                    borderColor: '#00d2ff',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: false
+                },
+                {
+                    label: 'Proyección del Punto 3',
+                    type: 'line',
+                    data: [
+                        { x: r.x3, y: minY - padY },
+                        { x: r.x3, y: r.y3 },
+                        { x: a, y: r.y3 }
+                    ],
+                    borderColor: '#ff4757',
+                    borderWidth: 1.5,
+                    borderDash: [6, 4],
+                    pointRadius: 0,
+                    fill: false
+                },
+                {
+                    label: 'Puntos conocidos (P1, P2)',
+                    data: [{ x: r.x1, y: r.y1 }, { x: r.x2, y: r.y2 }],
+                    backgroundColor: '#8a2be2',
+                    pointRadius: 7
+                },
+                {
+                    label: 'Punto calculado (P3)',
+                    data: [{ x: r.x3, y: r.y3 }],
+                    backgroundColor: '#2ed573',
+                    pointRadius: 9,
+                    pointStyle: 'rectRot'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { type: 'linear', position: 'bottom', title: { display: true, text: r.vx } },
+                y: { title: { display: true, text: r.vy } }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: c => '(' + r.vx + ': ' + linFmt(c.parsed.x) + ', ' + r.vy + ': ' + linFmt(c.parsed.y) + ')'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function runLinInterp(save) {
+    let panel = document.getElementById('resultsPanel');
+    let res = document.getElementById('resultsContent');
+    if(!panel || !res) return;
+
+    const r = computeLinInterp();
+
+    // Rellenar automáticamente la celda calculada del Punto 3
+    const outId = linMode === 'y' ? 'lin_y3' : 'lin_x3';
+    const otherId = linMode === 'y' ? 'lin_x3' : 'lin_y3';
+    let outEl = linEl(outId), otherEl = linEl(otherId);
+    if(outEl) {
+        if(r.ok) {
+            outEl.value = linFmt(linMode === 'y' ? r.y3 : r.x3, 8);
+            outEl.classList.add('auto-filled');
+        } else {
+            outEl.value = '';
+            outEl.classList.remove('auto-filled');
+        }
+    }
+    if(otherEl) otherEl.classList.remove('auto-filled');
+
+    if(!r.ok) {
+        panel.classList.remove('hidden');
+        document.getElementById('mainChartWrap').classList.add('hidden');
+        res.innerHTML = `<div class="badge ${r.pending ? 'info' : 'danger'}">${r.msg}</div>`;
+        return;
+    }
+
+    const f = linFmt;
+    const isDetailed = document.getElementById('detailedToggle').checked;
+    let html = '';
+    buildLinSteps(r).forEach(s => {
+        html += `<div class="step-card"><strong>${s.t}</strong><br>${s.c}</div>`;
+    });
+
+    const yVerif = r.y1 + r.m * (r.x3 - r.x1);
+    const errAbs = Math.abs(yVerif - r.y3);
+    const colin = (r.x2 - r.x1) * (r.y3 - r.y1) - (r.y2 - r.y1) * (r.x3 - r.x1);
+    const escala = Math.max(1, Math.abs(r.dx * r.dy));
+
+    let verif = `<div class="step-card verification"><h4>Verificación del resultado</h4>
+        Sustituyendo ${r.vx} = ${f(r.x3)} en la ecuación de la recta:<br>
+        ${r.vy} = ${f(r.m, 8)} &middot; ${f(r.x3)} ${r.b >= 0 ? '+' : '&minus;'} ${f(Math.abs(r.b), 8)} = <b>${f(yVerif, 8)}</b><br>
+        Diferencia con el valor obtenido: ${f(errAbs, 10)}<br>
+        Prueba de colinealidad de P<sub>1</sub>, P<sub>2</sub> y P<sub>3</sub>: (${r.vx}<sub>2</sub>&minus;${r.vx}<sub>1</sub>)(${r.vy}<sub>3</sub>&minus;${r.vy}<sub>1</sub>) &minus; (${r.vy}<sub>2</sub>&minus;${r.vy}<sub>1</sub>)(${r.vx}<sub>3</sub>&minus;${r.vx}<sub>1</sub>) = ${f(colin, 8)}<br>
+        ${Math.abs(colin) < 1e-8 * escala ? '<span class="badge success">Los tres puntos son colineales: el resultado es correcto.</span>' : '<span class="badge danger">Los puntos no resultan colineales, revisa los datos.</span>'}
+        </div>`;
+
+    let aviso = r.dentro
+        ? `<span class="badge success">Interpolación: ${r.vx}<sub>3</sub> = ${f(r.x3)} está dentro del intervalo [${f(Math.min(r.x1, r.x2))}, ${f(Math.max(r.x1, r.x2))}].</span>`
+        : `<span class="badge danger">Extrapolación: ${r.vx}<sub>3</sub> = ${f(r.x3)} está fuera del intervalo [${f(Math.min(r.x1, r.x2))}, ${f(Math.max(r.x1, r.x2))}]; el resultado es menos confiable.</span>`;
+
+    let resumen = `<div class="result-box" style="font-size:1.1rem;">
+            Punto 3 = ( ${r.vx} = ${f(r.x3, 8)} , ${r.vy} = ${f(r.y3, 8)} )
+        </div>
+        <div style="margin:0.5rem 0;">${aviso}</div>
+        <table style="max-width:480px;">
+            <tr><th>Concepto</th><th>Valor</th></tr>
+            <tr><td>${r.mode === 'y' ? r.vy + '<sub>3</sub> (calculado)' : r.vx + '<sub>3</sub> (calculado)'}</td><td>${f(r.mode === 'y' ? r.y3 : r.x3, 8)}</td></tr>
+            <tr><td>Pendiente (m)</td><td>${f(r.m, 8)}</td></tr>
+            <tr><td>Ordenada al origen (b)</td><td>${f(r.b, 8)}</td></tr>
+            <tr><td>Ecuación de la recta</td><td>${r.vy} = ${f(r.m, 6)}&middot;${r.vx} ${r.b >= 0 ? '+' : '&minus;'} ${f(Math.abs(r.b), 6)}</td></tr>
+            <tr><td>&Delta;${r.vx} / &Delta;${r.vy}</td><td>${f(r.dx)} / ${f(r.dy)}</td></tr>
+        </table>`;
+
+    panel.classList.remove('hidden');
+    res.innerHTML = (isDetailed ? html : '') + resumen + verif;
+    plotLinearInterp(r);
+
+    if(save) {
+        saveHistory({
+            lin_varx: r.vx, lin_vary: r.vy,
+            lin_x1: r.x1, lin_y1: r.y1,
+            lin_x2: r.x2, lin_y2: r.y2,
+            lin_x3: f(r.x3, 8), lin_y3: f(r.y3, 8)
+        });
     }
 }
 
