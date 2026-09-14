@@ -578,8 +578,8 @@ const methods = {
     interpolacion: [
         { id: 'linint', name: 'Interpolación Lineal', inputs: ['lin_table'], theory: '<h4>Interpolación Lineal</h4><p>Estima el valor de una variable entre dos puntos conocidos suponiendo que entre ellos la relación es una <b>línea recta</b>. Partiendo de la igualdad de pendientes entre el segmento (P₁,P₂) y el segmento (P₁,P₃):</p><p><b>(Y − Y₁) / (X − X₁) = (Y₂ − Y₁) / (X₂ − X₁)</b></p><p>Despejando se obtiene <b>Y = Y₁ + (X − X₁)·(Y₂ − Y₁)/(X₂ − X₁)</b> y, de forma simétrica, <b>X = X₁ + (Y − Y₁)·(X₂ − X₁)/(Y₂ − Y₁)</b>. Introduce los dos puntos conocidos y el valor conocido (X ó Y) del tercer punto: el resultado, la gráfica y el desarrollo se calculan automáticamente.</p>', examples: [{ name: 'Presión vs. Temperatura', data: { lin_varx: 'T', lin_vary: 'P', lin_x1: '20', lin_y1: '2.34', lin_x2: '30', lin_y2: '4.24', lin_x3: '25' } }, { name: 'Tabla de vapor', data: { lin_varx: 'h', lin_vary: 's', lin_x1: '2700', lin_y1: '7.1', lin_x2: '2800', lin_y2: '7.4', lin_x3: '2750' } }, { name: 'Genérico (X, Y)', data: { lin_varx: 'X', lin_vary: 'Y', lin_x1: '1', lin_y1: '3', lin_x2: '5', lin_y2: '11', lin_x3: '3' } }] },
         { id: 'lag', name: 'Lagrange', inputs: ['points', 'x_eval'], theory: '<h4>Interpolación de Lagrange</h4><p>Interpolación polinómica exacta. P(x) pasa por todos los n puntos. Grado n-1.</p>', examples: [{ name: 'Ejemplo 1', data: { x_eval: '2.5' } }, { name: 'Ejemplo 2', data: { x_eval: '1.5' } }] },
-        { id: 'new', name: 'Newton (Dif. Divididas)', inputs: ['points', 'x_eval'], theory: '<h4>Newton (Diferencias Divididas)</h4><p>Usa tabla de diferencias divididas. Fácil agregar nuevos puntos sin recalcular todo.</p>', examples: [{ name: 'Ejemplo 1', data: { x_eval: '2.5' } }, { name: 'Ejemplo 2', data: { x_eval: '1.5' } }] },
-        { id: 'spline', name: 'Splines Cúbicos', inputs: ['points', 'x_eval'], theory: '<h4>Splines Cúbicos</h4><p>Polinomios cúbicos por tramos. Suavidad C². Evita el fenómeno de Runge.</p>', examples: [{ name: 'Ejemplo 1', data: { x_eval: '1.5' } }] }
+        { id: 'new', name: 'Newton (Dif. Divididas)', inputs: ['points', 'x_eval_opt'], theory: '<h4>Interpolación de Newton o de diferencias divididas</h4><p>Construye el polinomio que aproxima un conjunto de puntos mediante la fórmula:</p><p><b>P<sub>n</sub>(x) = a<sub>0</sub> + a<sub>1</sub>(x−x<sub>0</sub>) + a<sub>2</sub>(x−x<sub>0</sub>)(x−x<sub>1</sub>) + ... + a<sub>n</sub>(x−x<sub>0</sub>)(x−x<sub>1</sub>)...(x−x<sub>n−1</sub>)</b></p><p>Los coeficientes a<sub>j</sub> son las diferencias divididas de la primera fila de la tabla, calculadas con <b>f(x<sub>i</sub>,...,x<sub>i+j</sub>) = [f(x<sub>i+1</sub>,...,x<sub>i+j</sub>) − f(x<sub>i</sub>,...,x<sub>i+j−1</sub>)] / (x<sub>i+j</sub> − x<sub>i</sub>)</b>. Con n puntos se obtiene un polinomio de grado n−1; agregar un punto nuevo sólo añade un término, sin recalcular los anteriores. Se muestra la tabla completa, el polinomio en forma de Newton y simplificado, la gráfica de comprobación y, opcionalmente, la evaluación en un valor de x.</p>', examples: [{ name: 'Ejercicio de clase: (1,2), (0,4), (-3,-2)', data: { points: [[1, 2], [0, 4], [-3, -2]], x_eval_opt: '' } }, { name: 'Cuadrática (1,1), (2,4), (3,9)', data: { points: [[1, 1], [2, 4], [3, 9]], x_eval_opt: '2.5' } }, { name: 'Cuatro puntos', data: { points: [[0, 1], [1, 3], [2, 2], [4, 5]], x_eval_opt: '1.5' } }] },
+        { id: 'spline', name: 'Splines Cúbicos', inputs: ['points', 'x_eval'], theory: '<h4>Splines Cúbicos</h4><p>Polinomios cúbicos por tramos. Suavidad C². Evita el fenómeno de Runge.</p>', examples: [{ name: 'Cuatro puntos', data: { points: [[0, 1], [1, 3], [2, 2], [4, 5]], x_eval: '1.5' } }, { name: 'Cuadrática', data: { points: [[1, 1], [2, 4], [3, 9]], x_eval: '2.5' } }] }
     ],
     integracion: [
         { id: 'trap', name: 'Regla del Trapecio', inputs: ['fx', 'a', 'b', 'n_int'], theory: '<h4>Regla del Trapecio</h4><p>Aproxima el área bajo la curva con trapecios. Error O(h²). Fórmula: h/2·[f(x₀) + 2Σf(xᵢ) + f(xₙ)].</p>', examples: [{ name: 'Ejemplo 1', data: { fx: 'exp(x)', a: '0', b: '1', n_int: '4' } }, { name: 'Ejemplo 2', data: { fx: 'sin(x)', a: '0', b: '3.14159', n_int: '6' } }, { name: 'Ejemplo 3', data: { fx: '1/(1+x^2)', a: '0', b: '1', n_int: '8' } }] },
@@ -592,7 +592,7 @@ const methods = {
         { id: 'rk4', name: 'Runge-Kutta (4to Orden)', inputs: ['fxy', 'x0', 'y0', 'h', 'xf'], theory: '<h4>Runge-Kutta 4</h4><p>Cuarto orden, error O(h⁴). El método más popular. Usa 4 evaluaciones por paso (k1,k2,k3,k4).</p>', examples: [{ name: 'Ejemplo 1', data: { fxy: 'x+y', x0: '0', y0: '1', h: '0.1', xf: '0.5' } }, { name: 'Ejemplo 2', data: { fxy: '-2*x*y', x0: '0', y0: '1', h: '0.1', xf: '1' } }] }
     ],
     ajuste: [
-        { id: 'minc', name: 'Mínimos Cuadrados', inputs: ['points', 'degree'], theory: '<h4>Mínimos Cuadrados</h4><p>Minimiza la suma de residuos cuadrados. R² mide la calidad del ajuste (1 = perfecto).</p>', examples: [{ name: 'Ejemplo 1', data: { degree: '1' } }, { name: 'Ejemplo 2', data: { degree: '2' } }] }
+        { id: 'minc', name: 'Mínimos Cuadrados', inputs: ['points', 'degree'], theory: '<h4>Mínimos Cuadrados</h4><p>Minimiza la suma de residuos cuadrados. R² mide la calidad del ajuste (1 = perfecto).</p>', examples: [{ name: 'Recta (grado 1)', data: { points: [[1, 2.1], [2, 3.9], [3, 6.2], [4, 7.8], [5, 10.1]], degree: '1' } }, { name: 'Parábola (grado 2)', data: { points: [[1, 1], [2, 4], [3, 9], [4, 16]], degree: '2' } }] }
     ],
     calc: []
 };
@@ -615,6 +615,7 @@ const inputDefinitions = {
     n_even: { label: 'n (Par)', type: 'number', placeholder: '4' },
     n_mult3: { label: 'n (Múltiplo de 3)', type: 'number', placeholder: '6' },
     x_eval: { label: 'Evaluar en x =', type: 'number', placeholder: '2.5' },
+    x_eval_opt: { label: 'Evaluar en x = (opcional)', type: 'number', placeholder: 'Dejar vacío para sólo obtener P(x)' },
     degree: { label: 'Grado del Polinomio', type: 'number', placeholder: '1' },
     sys_n: { label: 'Tamaño (n)', type: 'number', placeholder: '3' },
     sys_matrix: { label: 'Matriz (A|B) o Ecuaciones', isTextarea: true, placeholder: '2, 1, -1, 8\n-3, -1, 2, -11\n-2, 1, 2, -3' },
@@ -675,34 +676,49 @@ function getStr(id) {
     return el ? el.value : '';
 }
 
-function createPointsInput(id, container) {
+function addPointRow(div, x='', y='') {
+    let row = document.createElement('div');
+    row.className = 'dyn-row';
+    row.innerHTML = `
+        <input type="number" step="any" placeholder="x" value="${x}">
+        <input type="number" step="any" placeholder="y" value="${y}">
+        <button class="btn-small" onclick="this.parentElement.remove()">X</button>
+    `;
+    div.insertBefore(row, div.lastElementChild);
+}
+
+function createPointsInput(id, container, initial) {
     let div = document.createElement('div');
     div.id = `inp_${id}`;
     div.dataset.type = 'points';
     div.className = 'dynamic-table';
-    
-    const addRow = (x='', y='') => {
-        let row = document.createElement('div');
-        row.className = 'dyn-row';
-        row.innerHTML = `
-            <input type="number" placeholder="x" value="${x}">
-            <input type="number" placeholder="y" value="${y}">
-            <button class="btn-small" onclick="this.parentElement.remove()">X</button>
-        `;
-        div.insertBefore(row, div.lastElementChild);
-    };
 
     let btn = document.createElement('button');
     btn.className = 'btn-small';
     btn.innerText = '+ Agregar Punto';
-    btn.onclick = () => addRow();
+    btn.onclick = () => addPointRow(div);
     div.appendChild(btn);
 
-    addRow(1, 1);
-    addRow(2, 4);
-    addRow(3, 9);
-    
+    (initial || [[1, 1], [2, 4], [3, 9]]).forEach(p => {
+        let x = Array.isArray(p) ? p[0] : p.x;
+        let y = Array.isArray(p) ? p[1] : p.y;
+        addPointRow(div, x, y);
+    });
+
     container.appendChild(div);
+}
+
+// Reemplaza los puntos de una tabla dinámica (ejemplos precargados e historial)
+function setPointsInput(id, pts) {
+    let div = document.getElementById(`inp_${id}`);
+    if(!div || !Array.isArray(pts)) return;
+    div.querySelectorAll('.dyn-row').forEach(r => r.remove());
+    pts.forEach(p => {
+        let x = Array.isArray(p) ? p[0] : p.x;
+        let y = Array.isArray(p) ? p[1] : p.y;
+        if(x === undefined || y === undefined || x === null || y === null) return;
+        addPointRow(div, x, y);
+    });
 }
 
 /* ================= UI RENDER ================= */
@@ -787,7 +803,9 @@ function updateUI() {
                 if(currentMethod === 'linint') resetLinTable();
                 Object.entries(ex.data).forEach(([k, v]) => {
                     let el = document.getElementById(`inp_${k}`);
-                    if(el) { el.value = v; el.classList.remove('auto-filled'); }
+                    if(!el) return;
+                    if(el.dataset.type === 'points') setPointsInput(k, v);
+                    else { el.value = v; el.classList.remove('auto-filled'); }
                 });
                 if(currentMethod === 'linint') {
                     linMode = (ex.data.lin_y3 !== undefined && ex.data.lin_x3 === undefined) ? 'x' : 'y';
@@ -864,7 +882,7 @@ document.getElementById('historySelect').addEventListener('change', (e) => {
         let el = document.getElementById(`inp_${k}`);
         if(el) {
             if(el.dataset.type === 'points') {
-                // handle points
+                setPointsInput(k, item.data[k]);
             } else {
                 el.value = item.data[k];
             }
@@ -1200,8 +1218,12 @@ document.getElementById('solveBtn').addEventListener('click', () => {
             table += '</table>';
         }
         else if (currentMethod === 'lag') {
-            let pts = getVal('points');
+            let pts = getVal('points').filter(p => !isNaN(p.x) && !isNaN(p.y));
             let x_eval = getVal('x_eval');
+            if(pts.length < 2 || isNaN(x_eval)) {
+                res.innerHTML = `<div class="badge danger">Introduce al menos 2 puntos válidos y el valor de x a evaluar.</div>`;
+                return;
+            }
             savedData = {points: pts, x_eval};
             let n = pts.length;
             let result = 0;
@@ -1236,33 +1258,154 @@ document.getElementById('solveBtn').addEventListener('click', () => {
             ], plotX.map(x=>x.toFixed(2)));
         }
         else if (currentMethod === 'new') {
-            let pts = getVal('points');
-            let x_eval = getVal('x_eval');
-            savedData = {points: pts, x_eval};
+            const f = linFmt;
+            let pts = getVal('points').filter(p => !isNaN(p.x) && !isNaN(p.y));
+            let xRaw = getStr('x_eval_opt').trim();
+            let x_eval = xRaw === '' ? null : parseFloat(xRaw);
+            savedData = { points: pts, x_eval_opt: xRaw };
             let n = pts.length;
-            let divDiff = Array.from({length: n}, () => new Array(n).fill(0));
-            for(let i=0; i<n; i++) divDiff[i][0] = pts[i].y;
-            for(let j=1; j<n; j++) {
-                for(let i=0; i<n-j; i++) {
-                    divDiff[i][j] = (divDiff[i+1][j-1] - divDiff[i][j-1]) / (pts[i+j].x - pts[i].x);
+
+            if(n < 2) {
+                res.innerHTML = `<div class="badge danger">Se requieren al menos 2 puntos con valores numéricos.</div>`;
+                return;
+            }
+            for(let i = 0; i < n; i++) {
+                for(let j = i + 1; j < n; j++) {
+                    if(pts[i].x === pts[j].x) {
+                        res.innerHTML = `<div class="badge danger">Los valores de x deben ser distintos: x${i} y x${j} valen ${f(pts[i].x)}.</div>`;
+                        return;
+                    }
                 }
             }
-            let res_html = `<table><tr><th>x</th><th>f(x)</th>`;
-            for(let j=1; j<n; j++) res_html += `<th>Orden ${j}</th>`;
-            res_html += `</tr>`;
-            for(let i=0; i<n; i++) {
-                res_html += `<tr><td>${pts[i].x}</td>`;
-                for(let j=0; j<n-i; j++) res_html += `<td>${divDiff[i][j].toFixed(4)}</td>`;
-                res_html += `</tr>`;
+
+            // --- Tabla de diferencias divididas ---
+            let dd = Array.from({ length: n }, () => new Array(n).fill(null));
+            for(let i = 0; i < n; i++) dd[i][0] = pts[i].y;
+            let detalle = '';
+            for(let j = 1; j < n; j++) {
+                for(let i = 0; i < n - j; i++) {
+                    let num = dd[i + 1][j - 1] - dd[i][j - 1];
+                    let den = pts[i + j].x - pts[i].x;
+                    dd[i][j] = num / den;
+                    let sub = [];
+                    for(let k = i; k <= i + j; k++) sub.push(`x<sub>${k}</sub>`);
+                    let subPrev1 = [];
+                    for(let k = i + 1; k <= i + j; k++) subPrev1.push(`x<sub>${k}</sub>`);
+                    let subPrev0 = [];
+                    for(let k = i; k <= i + j - 1; k++) subPrev0.push(`x<sub>${k}</sub>`);
+                    detalle += `f(${sub.join(',')}) = [ f(${subPrev1.join(',')}) − f(${subPrev0.join(',')}) ] / ( x<sub>${i + j}</sub> − x<sub>${i}</sub> )<br>
+                        &nbsp;&nbsp;&nbsp;= ( ${f(dd[i + 1][j - 1], 6)} − ${f(dd[i][j - 1], 6)} ) / ( ${f(pts[i + j].x)} − ${f(pts[i].x)} )
+                        = ${f(num, 6)} / ${f(den, 6)} = <b>${f(dd[i][j], 8)}</b><br><br>`;
+                }
             }
-            res_html += `</table>`;
-            addStep('Tabla de Diferencias Divididas', res_html);
-            let result = divDiff[0][0], x_prod = 1;
-            for(let i=1; i<n; i++) {
-                x_prod *= (x_eval - pts[i-1].x);
-                result += divDiff[0][i] * x_prod;
+
+            let coefs = [];
+            for(let j = 0; j < n; j++) coefs.push(dd[0][j]);
+
+            // --- Paso 1: datos ---
+            let datos = `n = ${n} &nbsp;&nbsp;|&nbsp;&nbsp; j = 0, 1, ..., ${n - 1} &nbsp;&nbsp;|&nbsp;&nbsp; Grado del polinomio: ${n - 1}<br><br>`;
+            pts.forEach((p, i) => {
+                datos += `x<sub>${i}</sub> = ${f(p.x)} &nbsp;&nbsp;&nbsp; f(x<sub>${i}</sub>) = ${f(p.y)}<br>`;
+            });
+            addStep('1. Datos del problema', datos);
+
+            // --- Paso 2: fórmula general ---
+            addStep('2. Fórmula de interpolación de Newton',
+                `<span class="math-expr">P<sub>n</sub>(x) = a<sub>0</sub> + a<sub>1</sub>(x − x<sub>0</sub>) + a<sub>2</sub>(x − x<sub>0</sub>)(x − x<sub>1</sub>) + ... + a<sub>n</sub>(x − x<sub>0</sub>)(x − x<sub>1</sub>)...(x − x<sub>n−1</sub>)</span><br><br>
+                Donde cada coeficiente es una diferencia dividida: a<sub>j</sub> = f(x<sub>0</sub>, x<sub>1</sub>, ..., x<sub>j</sub>).`);
+
+            // --- Paso 3: cálculo de las diferencias divididas ---
+            addStep('3. Cálculo de las diferencias divididas', detalle);
+
+            // --- Paso 4: tabla ---
+            let tablaHtml = `<table><tr><th>j</th><th>x<sub>j</sub></th><th>f(x<sub>j</sub>)</th>`;
+            for(let j = 1; j < n; j++) {
+                let sub = [];
+                for(let k = 0; k <= j; k++) sub.push('x<sub>' + k + '</sub>');
+                tablaHtml += `<th>f(${sub.join(',')})<br>Orden ${j}</th>`;
             }
-            table = `<div class="result-box">P(${x_eval}) = ${result.toFixed(6)}</div>`;
+            tablaHtml += `</tr>`;
+            for(let i = 0; i < n; i++) {
+                tablaHtml += `<tr><td>${i}</td><td>x<sub>${i}</sub> = ${f(pts[i].x)}</td>`;
+                for(let j = 0; j < n - i; j++) {
+                    let esCoef = (i === 0);
+                    tablaHtml += `<td style="${esCoef ? 'border:2px solid var(--success); font-weight:700;' : ''}">${f(dd[i][j], 6)}${esCoef ? ` <span style="color:var(--success)">= a<sub>${j}</sub></span>` : ''}</td>`;
+                }
+                for(let j = n - i; j < n; j++) tablaHtml += `<td></td>`;
+                tablaHtml += `</tr>`;
+            }
+            tablaHtml += `</table>`;
+            addStep('4. Tabla de diferencias divididas', tablaHtml +
+                `<br>Los coeficientes a<sub>j</sub> son los valores de la primera fila (recuadrados).`);
+
+            // --- Paso 5: coeficientes ---
+            let coefTxt = coefs.map((a, i) => `a<sub>${i}</sub> = ${f(a, 8)}`).join(' &nbsp;&nbsp;|&nbsp;&nbsp; ');
+            addStep('5. Coeficientes del polinomio', coefTxt);
+
+            // --- Paso 6: polinomio en forma de Newton ---
+            addStep('6. Polinomio de Newton',
+                `Forma general:<br><span class="math-expr">P(x) = ${newtonPolyString(coefs, pts, false)}</span><br><br>
+                 Sustituyendo los coeficientes:<br><span class="math-expr">P(x) = ${newtonPolyString(coefs, pts, true)}</span>`);
+
+            // --- Paso 7: forma expandida ---
+            let expandido = [coefs[0]];
+            let base = [1];
+            for(let i = 1; i < n; i++) {
+                base = polyMul(base, [-pts[i - 1].x, 1]);
+                for(let k = 0; k < base.length; k++) expandido[k] = (expandido[k] || 0) + coefs[i] * base[k];
+            }
+            for(let k = 0; k < expandido.length; k++) if(expandido[k] === undefined) expandido[k] = 0;
+            addStep('7. Polinomio simplificado (forma estándar)',
+                `<span class="math-expr">P(x) = ${polyToString(expandido)}</span>`);
+
+            // --- Paso 8: evaluación opcional ---
+            let yEval = null;
+            if(x_eval !== null && !isNaN(x_eval)) {
+                yEval = polyEval(expandido, x_eval);
+                let sust = `P(${f(x_eval)}) = `;
+                let partes = [];
+                let acum = 0;
+                for(let i = 0; i < n; i++) {
+                    let prod = coefs[i];
+                    let factores = '';
+                    for(let k = 0; k < i; k++) {
+                        prod *= (x_eval - pts[k].x);
+                        factores += `(${f(x_eval)} − ${f(pts[k].x)})`;
+                    }
+                    acum += prod;
+                    partes.push(`${f(coefs[i], 6)}${factores}`);
+                }
+                sust += partes.join(' + ') + `<br>P(${f(x_eval)}) = <b>${f(yEval, 8)}</b>`;
+                addStep('8. Evaluación del polinomio', sust);
+                table = `<div class="result-box" style="font-size:1.1rem;">P(${f(x_eval)}) = ${f(yEval, 8)}</div>`;
+            } else {
+                table = `<div class="result-box" style="font-size:1.05rem;">P(x) = ${polyToString(expandido)}</div>
+                    <div class="lin-hint" style="text-align:left;">Introduce un valor en «Evaluar en x =» para obtener además P(x) en ese punto.</div>`;
+            }
+
+            table += `<table style="max-width:560px;">
+                <tr><th>Concepto</th><th>Valor</th></tr>
+                <tr><td>Grado</td><td>${n - 1}</td></tr>
+                <tr><td>Forma de Newton</td><td>${newtonPolyString(coefs, pts, true)}</td></tr>
+                <tr><td>Forma estándar</td><td>P(x) = ${polyToString(expandido)}</td></tr>
+            </table>`;
+
+            // --- Verificación: el polinomio debe pasar por todos los puntos ---
+            let verifRows = '';
+            let maxErr = 0;
+            pts.forEach((p, i) => {
+                let pv = polyEval(expandido, p.x);
+                let err = Math.abs(pv - p.y);
+                if(err > maxErr) maxErr = err;
+                verifRows += `<tr><td>${i}</td><td>${f(p.x)}</td><td>${f(p.y)}</td><td>${f(pv, 8)}</td><td>${f(err, 10)}</td></tr>`;
+            });
+            table += `<div class="step-card verification"><h4>Verificación del resultado</h4>
+                El polinomio interpolante debe reproducir exactamente cada punto dado:
+                <table><tr><th>j</th><th>x<sub>j</sub></th><th>f(x<sub>j</sub>)</th><th>P(x<sub>j</sub>)</th><th>|Error|</th></tr>${verifRows}</table>
+                ${maxErr < 1e-8 ? '<br><span class="badge success">P(x) pasa por todos los puntos: la interpolación es correcta.</span>' : '<br><span class="badge danger">Se detectaron diferencias; revisa los datos ingresados.</span>'}
+                </div>`;
+
+            plotPolynomial(expandido, pts, x_eval, yEval, 'P(x) de Newton');
         }
         else if (currentMethod === 'trap' || currentMethod === 's13' || currentMethod === 's38') {
             let fx = getStr('fx');
@@ -1436,8 +1579,12 @@ document.getElementById('solveBtn').addEventListener('click', () => {
             table += '</ul>';
         }
         else if (currentMethod === 'spline') {
-            let pts = getVal('points');
+            let pts = getVal('points').filter(p => !isNaN(p.x) && !isNaN(p.y));
             let x_eval_val = getVal('x_eval');
+            if(pts.length < 3 || isNaN(x_eval_val)) {
+                res.innerHTML = `<div class="badge danger">Introduce al menos 3 puntos válidos y el valor de x a evaluar.</div>`;
+                return;
+            }
             savedData = {points: pts, x_eval: x_eval_val};
             pts.sort((a,b) => a.x - b.x);
             let n = pts.length - 1;
@@ -1626,6 +1773,122 @@ function calcAction(act) {
         calcExpr += act;
         disp.innerText = calcExpr;
     }
+}
+
+/* ========== POLINOMIOS (Newton / diferencias divididas) ========== */
+// Coeficientes en orden ascendente: [c0, c1, c2] = c0 + c1*x + c2*x^2
+function polyMul(p, q) {
+    let r = new Array(p.length + q.length - 1).fill(0);
+    for(let i = 0; i < p.length; i++)
+        for(let j = 0; j < q.length; j++) r[i + j] += p[i] * q[j];
+    return r;
+}
+
+function polyEval(c, x) {
+    let r = 0;
+    for(let i = c.length - 1; i >= 0; i--) r = r * x + c[i];
+    return r;
+}
+
+// Escribe el polinomio en potencias descendentes: 3x^2 - 2x + 1
+function polyToString(c, v = 'x') {
+    let terms = [];
+    for(let i = c.length - 1; i >= 0; i--) {
+        let a = parseFloat(c[i].toFixed(10));
+        if(a === 0) continue;
+        let abs = Math.abs(a);
+        let coefTxt = (abs === 1 && i > 0) ? '' : linFmt(abs, 6);
+        let varTxt = i === 0 ? '' : (i === 1 ? v : `${v}<sup>${i}</sup>`);
+        terms.push({ sign: a < 0 ? '−' : '+', txt: coefTxt + varTxt });
+    }
+    if(terms.length === 0) return '0';
+    let out = (terms[0].sign === '−' ? '−' : '') + terms[0].txt;
+    for(let k = 1; k < terms.length; k++) out += ` ${terms[k].sign} ${terms[k].txt}`;
+    return out;
+}
+
+// Factor (x − xj) formateado según el signo de xj
+function newtonFactor(xj) {
+    if(xj === 0) return '(x)';
+    return xj > 0 ? `(x − ${linFmt(xj)})` : `(x + ${linFmt(Math.abs(xj))})`;
+}
+
+// P(x) = a0 + a1(x−x0) + a2(x−x0)(x−x1) + ... con o sin valores numéricos
+function newtonPolyString(coefs, pts, numerico) {
+    let out = '';
+    for(let i = 0; i < coefs.length; i++) {
+        let a = coefs[i];
+        if(numerico && parseFloat(a.toFixed(10)) === 0 && i > 0) continue;
+        let factores = '';
+        for(let k = 0; k < i; k++) factores += newtonFactor(pts[k].x);
+        let aTxt = numerico ? linFmt(Math.abs(a), 6) : `a<sub>${i}</sub>`;
+        let signo = (numerico && a < 0) ? '−' : '+';
+        if(out === '') out = (numerico && a < 0 ? '−' : '') + aTxt + factores;
+        else out += ` ${numerico ? signo : '+'} ${aTxt}${factores}`;
+    }
+    return out === '' ? '0' : out;
+}
+
+// Gráfica de un polinomio con sus puntos de soporte
+function plotPolynomial(coefs, pts, xEval, yEval, titulo) {
+    let wrap = document.getElementById('mainChartWrap');
+    wrap.classList.remove('hidden');
+    let ctx = document.getElementById('mainChart').getContext('2d');
+    if(mainChart) mainChart.destroy();
+
+    const xsAll = pts.map(p => p.x).concat(xEval === null ? [] : [xEval]);
+    const minX = Math.min(...xsAll), maxX = Math.max(...xsAll);
+    const pad = (maxX - minX) * 0.2 || 1;
+    const a = minX - pad, b = maxX + pad;
+    const curva = [];
+    const paso = (b - a) / 200;
+    for(let x = a; x <= b + paso / 2; x += paso) curva.push({ x: x, y: polyEval(coefs, x) });
+
+    let datasets = [
+        {
+            label: titulo || 'Polinomio P(x)',
+            type: 'line',
+            data: curva,
+            borderColor: '#00d2ff',
+            borderWidth: 2,
+            pointRadius: 0,
+            fill: false
+        },
+        {
+            label: 'Puntos dados',
+            data: pts.map(p => ({ x: p.x, y: p.y })),
+            backgroundColor: '#8a2be2',
+            pointRadius: 7
+        }
+    ];
+
+    if(xEval !== null && !isNaN(xEval)) {
+        datasets.push({
+            label: `P(${linFmt(xEval)}) = ${linFmt(yEval, 6)}`,
+            data: [{ x: xEval, y: yEval }],
+            backgroundColor: '#2ed573',
+            pointRadius: 9,
+            pointStyle: 'rectRot'
+        });
+    }
+
+    mainChart = new Chart(ctx, {
+        type: 'scatter',
+        data: { datasets: datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { type: 'linear', position: 'bottom', title: { display: true, text: 'x' } },
+                y: { title: { display: true, text: 'f(x)' } }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: { label: c => `(${linFmt(c.parsed.x)}, ${linFmt(c.parsed.y)})` }
+                }
+            }
+        }
+    });
 }
 
 /* ================= INTERPOLACIÓN LINEAL ================= */

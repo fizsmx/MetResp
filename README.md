@@ -39,7 +39,7 @@ La plataforma se ejecuta de manera totalmente local en el navegador del usuario,
 
 - Procedimiento paso a paso estilo cuaderno: Exposición explícita de fórmulas base, sustitución de variables en cada paso, operaciones algebraicas intermedias y criterios de parada.
 - Explicación Teórica: Cada método incluye un bloque teórico explicativo con las fórmulas clave, los criterios de convergencia y las condiciones de uso, apoyando el proceso educativo.
-- Ejemplos Predefinidos: Incorporación de conjuntos de ejemplos listos para cargar en cada método, facilitando la comprensión y validación de resultados.
+- Ejemplos Predefinidos: Incorporación de conjuntos de ejemplos listos para cargar en cada método (incluidos los puntos de las tablas), facilitando la comprensión y validación de resultados.
 - Verificación de Resultados: Sistema automático que sustituye los resultados obtenidos en las ecuaciones y funciones originales para comprobar matemáticamente la validez de la respuesta.
 - Modalidad de visualización dual: Alternancia entre modo detallado (demostración completa de cada cálculo) y modo compacto (tablas sinópticas de convergencia rápida).
 - Gráficas de convergencia y funciones: Representación gráfica interactiva del comportamiento de las funciones, interpolaciones, ajustes y curvas de convergencia del error relativo con Chart.js.
@@ -126,7 +126,7 @@ Estimación de un valor intermedio a partir de dos puntos conocidos suponiendo c
 Construcción directa del polinomio interpolador mediante combinaciones lineales ponderadas de polinomios base.
 
 #### 12. Interpolación de Newton (Diferencias Divididas)
-Formulación polinómica basada en coeficientes progresivos obtenidos mediante la tabla de diferencias divididas.
+Construcción del polinomio Pn(x) = a0 + a1(x−x0) + a2(x−x0)(x−x1) + ... + an(x−x0)(x−x1)...(x−xn−1), cuyos coeficientes son las diferencias divididas de la primera fila de la tabla. El desarrollo muestra los datos, la fórmula general, el cálculo de cada diferencia dividida con su fracción sustituida, la tabla completa con los coeficientes aj resaltados, el polinomio en forma de Newton y en forma estándar simplificada, la evaluación opcional en un valor de x y la gráfica de comprobación. La verificación confirma que el polinomio reproduce exactamente cada punto dado.
 
 #### 13. Splines Cúbicos
 Interpolación segmentada mediante polinomios de tercer grado unidos con condiciones de suavidad continua hasta su segunda derivada, evitando el fenómeno de oscilación de Runge en los extremos.
